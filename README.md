@@ -72,22 +72,6 @@ cd gng
 sudo ./install
 ```
 
-### install.sh usage
-```bash
-sudo ./install.sh [-fhsu]
-
-Install gng from git source tree. See http://github.com/dantesun/gng for details.
-
--u uninstall
--f re-install
--h usage
--s check for update
-```
-#### install.sh Examples
-1. `./install.sh -f` will re-install everything
-2. `./install.sh -s` will check for latest updates from remote master
-3. `git reset --hard && git pull` will keep your copy to the latest
-
 ## Aliasing the `gradle` command
 To avoid using any system wide Gradle distribution add a `gradle` alias to `gw` to your shell's configuration file.
 
@@ -98,3 +82,20 @@ echo "alias gradle=gng" >> ~/.bashrc
 echo "export PATH=/usr/local/bin:${PATH}" >> ~/.bashrc
 source ~/.bashrc
 ```
+
+## install.sh usage
+```bash
+sudo ./install.sh [-fhsu]
+
+Install gng from git source tree. See http://github.com/dantesun/gng for details.
+
+-u uninstall
+-f re-install
+-h usage
+-s check for update
+```
+#### more Examples
+1. `./install.sh -f` will re-install everything
+2. `./install.sh -s` will check for latest updates from remote master
+3. `git reset --hard && git pull` will keep your copy to the latest
+
