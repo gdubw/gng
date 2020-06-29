@@ -18,17 +18,18 @@ You can trust the embedded gradle-wrapper.jar. It is verified by [Gradle Wrapper
 
 # Usage
 
-Just type 'gng' whenever you need to type `gradle`, then your life will be easier.
+Just type `gng` whenever you need to type `gradle` or `gradlew`, then your life will be easier.
 
 If you don't have any Gradle distribution, please don't worry. just type `gng --bootstrap`. It will create a Gradle wrapper in your current
 working directory. By default, `gng` installs Gradle wrapper with the latest version of Gradle. 
 
 The latest version is from https://services.gradle.org/versions/current
 
-```bash
+```text
 gng --bootstrap [version] [distType]
 
 version: Gradle version, like 6.5, 4.2.1, ...etc. 'latest' will install the latest gradle distribution
+
 distType: 'all' for Gradle Distribution with source code, 'bin' for binary distribution.
 ```
 
@@ -36,9 +37,8 @@ Example: This command will install the latest version with Gradle distribution i
 ```bash
 gng --bootstrap latest all
 ```
-It will output:
+It will output like this(version number may vary as time goes by):
 ```bash
-/V/M/U/d/w/o/d/g/tmp git:master ❯❯❯ gng --bootstrap 6.5 all                                                                                                                                                                                             ⬆ ✱ ◼
 Running the embedded wrapper ...
 [GNG] Gradle Wrapper 6.5 installed, distributionUrl=https://services.gradle.org/distributions/gradle-6.5-all.zip
 ```
@@ -50,15 +50,16 @@ Running the embedded wrapper ...
 
 # Installation
 
-## Homebrew
-TODO :no_entry_sign: Please don't use this installing method.  I am still working on it.
+## Homebrew (TODO)
+
+:no_entry_sign: Please don't use this installing method.  I am still working on it.
 
 ```bash
 brew install gng
 ```
 
 >
->To install homebrew, visit [Homebrew Offical Site](https://brew.sh/), or excute 
+>To install homebrew, visit [Homebrew Offical Site](https://brew.sh/), or execute 
 >```bash
 >/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 >```
@@ -72,7 +73,7 @@ sudo ./install
 ```
 
 ```bash
-./install.sh [-fhsu]
+sudo ./install.sh [-fhsu]
 
 Install gng from git source tree. See http://github.com/dantesun/gng for details.
 
@@ -91,7 +92,7 @@ To avoid using any system wide Gradle distribution add a `gradle` alias to `gw` 
 
 Example *bash*:
 
-```bash
+```text
 echo "alias gradle=gng" >> ~/.bashrc
 echo "export PATH=/usr/local/bin:${PATH}" >> ~/.bashrc
 source ~/.bashrc

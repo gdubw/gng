@@ -55,7 +55,7 @@ uninstall() {
 
 usage() {
     usage="
-$0 [-fhsu]
+sudo $0 [-fhsu]
 
 Install gng from git source tree. See http://github.com/dantesun/gng for details.
 
