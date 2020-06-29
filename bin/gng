@@ -61,7 +61,7 @@ execute_gradle() {
   fi
 
   # Say what we are gonna do, then do it.
-  die "Using gradle at '${gradle}' to run buildfile '${build_gradle}':\n"
+  echo "Using gradle at '${gradle}' to run buildfile '${build_gradle}':\n"
   "${gradle}" "$@"
 }
 
