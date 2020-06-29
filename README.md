@@ -18,7 +18,7 @@ You can trust the embedded gradle-wrapper.jar. It is verified by [Gradle Wrapper
 
 # Usage
 
-Just type 'gng' whenever you need to tyype `gradle`, then your life will be easier.
+Just type 'gng' whenever you need to type `gradle`, then your life will be easier.
 
 If you don't have any Gradle distribution, please don't worry. just type `gng --bootstrap`. It will create a Gradle wrapper in your current
 working directory. By default, `gng` installs Gradle wrapper with version `4.8.1`. 
