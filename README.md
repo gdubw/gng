@@ -11,7 +11,7 @@ It also provides a bootstrap function installing any Gradle wrapper version you 
 This is originally inspired by [gdub](https://www.gdub.rocks/) and [gradlew-bootstrap](https://github.com/viphe/gradlew-bootstrap). 
 I shamelessly steal some code from them.
 
-# How GNG installs your Gradle Wrapper?
+# How does GNG install your Gradle Wrapper?
 
 Internally, it uses an embedded Gradle Wrapper with version 1.0 distribution. The reason use `1.0` is the small distribution package size.
 You can trust the embedded gradle-wrapper.jar. It is verified by [Gradle Wrapper Validation](https://github.com/marketplace/actions/gradle-wrapper-validation).
@@ -21,9 +21,7 @@ You can trust the embedded gradle-wrapper.jar. It is verified by [Gradle Wrapper
 Just type 'gng' whenever you need to type `gradle`, then your life will be easier.
 
 If you don't have any Gradle distribution, please don't worry. just type `gng --bootstrap`. It will create a Gradle wrapper in your current
-working directory. By default, `gng` installs Gradle wrapper with version `4.8.1`. 
-
-You can also use `gng --bootstrap [version]` to install whatever Gradle version you like. `gng --bootstrap latest` will install Gradle Wrapper with the latest Gradle version.
+working directory. By default, `gng` installs Gradle wrapper with the latest version of Gradle. 
 
 
 
@@ -49,7 +47,17 @@ git clone https://github.com/dantesun/gng.git
 cd gng
 sudo ./install
 ```
-You can also execute `sudo ./install.sh -u` to uninstall `gng`.
+
+```bash
+./install.sh [-fhsu]
+
+Install gng from git source tree. See http://github.com/dantesun/gng for details.
+
+-u uninstall
+-f re-install
+-h usage
+-s check for update
+```
 
 ## Aliasing the `gradle` command
 To avoid using any system wide Gradle distribution add a `gradle` alias to `gw` to your shell's configuration file.
