@@ -1,3 +1,5 @@
+![](https://github.com/dantesun/gng/workflows/Validate%20Gradle%20Wrapper/badge.svg)
+
 # GNG is Not Gradle
 
 I worked on a lot of gradle-based projects with different gradle versions. A global installed
@@ -55,5 +57,3 @@ echo "alias gradle=gng" >> ~/.bashrc
 echo "export PATH=/usr/local/bin:${PATH}" >> ~/.bashrc
 source ~/.bashrc
 ```
-
-
