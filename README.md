@@ -3,8 +3,8 @@
 # GNG is Not Gradle
 
 I worked on a lot of gradle-based projects with different gradle versions. A global installed
-gradle distribution  not only make no sense to me but also sometimes confuses me which gradle version I ran from command
-line. Keep typing `./gradlew` is cumbersome. Even worse when you have to type `../gradlew`, or `../../gradlew`.
+gradle distribution  not only make no sense to me because I alwasy Gradle Wrapper. 
+Keep typing `./gradlew` is cumbersome. Even worse when you have to type `../gradlew`, or `../../gradlew`.
 
 GNG is a script that automatically search your `gradlew` when you are inside your Gradle project and execute it. 
 It also provides a bootstrap function installing any Gradle wrapper version you prefer If you are creating a new Gradle project.
