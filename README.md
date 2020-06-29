@@ -81,6 +81,10 @@ Install gng from git source tree. See http://github.com/dantesun/gng for details
 -h usage
 -s check for update
 ```
+### Examples
+1. `./install.sh -f` will re-install everything
+2. `./install.sh -s` will check for latest updates from remote master
+3. `git reset --hard && git pull` will keep your copy to the latest
 
 ## Aliasing the `gradle` command
 To avoid using any system wide Gradle distribution add a `gradle` alias to `gw` to your shell's configuration file.
