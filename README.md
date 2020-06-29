@@ -23,7 +23,25 @@ Just type 'gng' whenever you need to type `gradle`, then your life will be easie
 If you don't have any Gradle distribution, please don't worry. just type `gng --bootstrap`. It will create a Gradle wrapper in your current
 working directory. By default, `gng` installs Gradle wrapper with the latest version of Gradle. 
 
+The latest version is from https://services.gradle.org/versions/current
 
+```bash
+gng --bootstrap [version] [distType]
+
+version: Gradle version, like 6.5, 4.2.1, ...etc. 'latest' will install the latest gradle distribution
+distType: 'all' for Gradle Distribution with source code, 'bin' for binary distribution.
+```
+
+Example: This command will install the latest version with Gradle distribution including source code.
+```bash
+gng --bootstrap latest all
+```
+It will output:
+```bash
+/V/M/U/d/w/o/d/g/tmp git:master ❯❯❯ gng --bootstrap 6.5 all                                                                                                                                                                                             ⬆ ✱ ◼
+Running the embedded wrapper ...
+[GNG] Gradle Wrapper 6.5 installed, distributionUrl=https://services.gradle.org/distributions/gradle-6.5-all.zip
+```
 
 # Installation
 

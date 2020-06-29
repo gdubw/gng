@@ -50,7 +50,7 @@ uninstall() {
     ensure_root
     rm -f /usr/local/bin/gng
     rm -rf /opt/gng
-    info "gng is uninstalled.\n"
+    info "gng is uninstalled."
 }
 
 usage() {
@@ -96,9 +96,6 @@ check_update() {
 
 install() {
     ensure_root
-    if ! check_update; then
-      exit 1
-    fi
 
     local PREFIX="${1:-/opt/gng}"
     local GNG_ROOT="$(abs_dirname "$0")"
@@ -106,7 +103,8 @@ install() {
     mkdir -p "${PREFIX}/bin"
     cp -R "${GNG_ROOT}/bin/gng" "${PREFIX}/bin"
     cp -R "${GNG_ROOT}/gradle" "${PREFIX}/"
-    echo "Installed gng to $PREFIX"
+
+    info "Installed gng to $PREFIX"
 
     ln -s /opt/gng/bin/gng /usr/local/bin/gng
 }

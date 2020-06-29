@@ -5,13 +5,18 @@ gradle.rootProject {
             // The Gradle distribution site only supports https download now.
             def wrapperProps = new Properties()
             propertiesFile.withInputStream { wrapperProps.load(it) }
-            def url = new URL(wrapperProps.get("distributionUrl"))
+            def urlStr = wrapperProps.get("distributionUrl")
+            def url = new URL(urlStr)
+            def distFile = url.getFile()
+            if("all" == "${distType}".toString()) {
+                distFile = distFile.replaceAll("(gradle-.*)-bin.zip", "\$1-all.zip")
+            }
             if("http" == url.protocol) {
-                logger.lifecycle("distributionUrl's protocol is 'http', fixing it.")
-                url = new URL("https", url.getHost(), url.getPort(), url.getFile(), url.getRef());
+                url = new URL("https", url.getHost(), url.getPort(), distFile, url.getRef());
                 wrapperProps.setProperty("distributionUrl", url.toString())
                 propertiesFile.withOutputStream { wrapperProps.store(it, "Created by GNG.") }
             }
+            println("[GNG] Gradle Wrapper ${gradleVersion} installed, distributionUrl=${url}")
         }
     }
 }
