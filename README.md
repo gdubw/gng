@@ -72,6 +72,7 @@ cd gng
 sudo ./install
 ```
 
+### install.sh usage
 ```bash
 sudo ./install.sh [-fhsu]
 
