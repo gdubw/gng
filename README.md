@@ -28,6 +28,7 @@ In existing Gradle project, instead of typing `./gradlew`, just type `gng`, then
 # Installation
 
 ## Homebrew
+TODO :no_entry_sign: Please don't use this installing method.  I am still working on it.
 
 ```bash
 brew install gng
