@@ -17,7 +17,7 @@ I shamelessly steal some code from them.
 Internally, it uses an embedded Gradle Wrapper with version 1.0 distribution. The reason use `1.0` is the small distribution package size.
 You can trust the embedded gradle-wrapper.jar. It is verified by [Gradle Wrapper Validation](https://github.com/marketplace/actions/gradle-wrapper-validation).
 
-#Usage
+# Usage
 
 If you don't have any Gradle distribution, please don't worry. just type `gng --bootstrap`. It will create a Gradle wrapper in your current
 working directory. By default, `gng` installs Gradle wrapper with version `4.8.1`. Or you can use `gng --bootstrap [version]` to install 
