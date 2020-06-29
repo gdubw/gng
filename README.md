@@ -42,6 +42,11 @@ It will output:
 Running the embedded wrapper ...
 [GNG] Gradle Wrapper 6.5 installed, distributionUrl=https://services.gradle.org/distributions/gradle-6.5-all.zip
 ```
+## More examples
+
+1. `gng --bootstrap` will silently upgrade your existing Gradle Wrapper to the latest version
+2. `gng --bootstrap 4.8.1` will silently upgrade your existing Gradle Wrapper to the version 4.8.1
+2. `gng --bootstrap latest all` will silently upgrade your existing Gradle Wrapper to the latest version with Gradle source code archive.
 
 # Installation
 
