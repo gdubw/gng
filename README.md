@@ -94,7 +94,7 @@ Install gng from git source tree. See http://github.com/dantesun/gng for details
 -h usage
 -s check for update
 ```
-#### more Examples
+examples:
 1. `./install.sh -f` will re-install everything
 2. `./install.sh -s` will check for latest updates from remote master
 3. `git reset --hard && git pull` will keep your copy to the latest
