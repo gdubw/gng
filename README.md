@@ -46,6 +46,7 @@ git clone https://github.com/dantesun/gng.git
 cd gng
 sudo ./install
 ```
+You can also execute `sudo ./install.sh -u` to uninstall `gng`.
 
 ## Aliasing the `gradle` command
 To avoid using any system wide Gradle distribution add a `gradle` alias to `gw` to your shell's configuration file.
