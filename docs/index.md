@@ -19,9 +19,9 @@ You might interest in these discussions.
 > 
 > Quoted from [gdub](https://gdub.rocks)
 >
->[Issue Gradle-2429](http://issues.gradle.org/browse/Gradle-2429)
->[Spencer Allain's Gradle Forum Post](http://gsfn.us/t/33g0l)
->[Phil Swenson's Gradle Forum Post](http://gsfn.us/t/39h67)
+> - [Issue Gradle-2429](http://issues.gradle.org/browse/Gradle-2429)
+> - [Spencer Allain's Gradle Forum Post](http://gsfn.us/t/33g0l)
+> - [Phil Swenson's Gradle Forum Post](http://gsfn.us/t/39h67)
 >
 
 You can visit [gdub](http://gdub.rocks) website for more details.
