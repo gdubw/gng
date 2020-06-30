@@ -2,19 +2,19 @@
 
 # GNG is Not Gradle
 
-I worked on a lot of gradle-based projects with different gradle versions. A globally installed gradle distribution make no sense to me because I always use Gradle Wrapper. 
-Keep typing `./gradlew` is cumbersome. Even worse when you have to type `../gradlew`, or `../../gradlew`.
+GNG is a script that automatically search your `gradlew` when you are inside your Gradle project and execute it. It also provides a bootstrap function installing any Gradle wrapper version you prefer If you are creating a new Gradle project.
 
-GNG is a script that automatically search your `gradlew` when you are inside your Gradle project and execute it. 
-It also provides a bootstrap function installing any Gradle wrapper version you prefer If you are creating a new Gradle project.
+This is originally inspired by [gdub](https://www.gdub.rocks/) and [gradlew-bootstrap](https://github.com/viphe/gradlew-bootstrap). I shamelessly steal some code from them.
 
-This is originally inspired by [gdub](https://www.gdub.rocks/) and [gradlew-bootstrap](https://github.com/viphe/gradlew-bootstrap). 
-I shamelessly steal some code from them.
+## What's the problem?
 
-# How does GNG install your Gradle Wrapper?
+I worked with a lot of gradle projects, every project has its own Gradle Wrapper. So the global installed one, normally installed with `brew install gradle`, is seldom used. In fact, the global installed gradle’s version may conflict with the project you are working on and some weird and unexpected building failures may happen. **The best practice is always using Gradle Wrapper comes with a project.** It's more better to not keep a copy of global available gradle. 
 
-Internally, it uses an embedded Gradle Wrapper with version 1.0 distribution. The reason use `1.0` is the small distribution package size.
-You can trust the embedded gradle-wrapper.jar. It is verified by [Gradle Wrapper Validation](https://github.com/marketplace/actions/gradle-wrapper-validation).
+But keep typing `./gradlew` is cumbersome. It becoms even worse when you have to type `../gradlew`, or `../../gradlew`.
+
+I am a heavy Gradle user, I always need to create a new Gradle project for trying some new ideas, without the globally installed gradle , it is not possible installing Gradle Wrapper into a brand new project. 
+
+
 
 # Usage
 
@@ -99,3 +99,8 @@ examples:
 2. `./install.sh -s` will check for latest updates from remote master
 3. `git reset --hard && git pull` will keep your copy to the latest
 
+
+# How does GNG install your Gradle Wrapper?
+
+Internally, it uses an embedded Gradle Wrapper with version 1.0 distribution. The reason use `1.0` is the small distribution package size.
+You can trust the embedded gradle-wrapper.jar. It is verified by [Gradle Wrapper Validation](https://github.com/marketplace/actions/gradle-wrapper-validation) ![](https://github.com/dantesun/gng/workflows/Validate%20Gradle%20Wrapper/badge.svg).
