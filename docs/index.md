@@ -117,18 +117,8 @@ Running the embedded wrapper ...
 
 ## Homebrew (TODO)
 
-:no_entry_sign: Please don't use this installing method.  I am still working on it.
+I am still working on it ...
 
-```bash
-brew install gng
-```
-
->
->To install homebrew, visit [Homebrew Offical Site](https://brew.sh/), or execute 
->```bash
->/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
->```
->
 ## Installing from source
 
 ```bash
