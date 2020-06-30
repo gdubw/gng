@@ -24,8 +24,6 @@ You might interest in these discussions.
 > - [Phil Swenson's Gradle Forum Post](http://gsfn.us/t/39h67)
 >
 
-You can visit [gdub](http://gdub.rocks) website for more details.
-
 # Usage
 
 Just type `gng` whenever you need to type `gradle` or `gradlew`, then your life will be easier.
