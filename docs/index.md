@@ -1,5 +1,9 @@
 ![](https://github.com/dantesun/gng/workflows/Validate%20Gradle%20Wrapper/badge.svg)
 
+# GNG is merging with gdub
+
+I am working on merge gng and gdub together after talked with the author of `gdub`. `gng` will still be kept as a symbol link to `gw`.
+
 # GNG is Not Gradle
 
 GNG is a script that automatically search your `gradlew` when you are inside your Gradle project and execute it. It also provides a bootstrap function installing any Gradle wrapper version you prefer If you are creating a new Gradle project.
