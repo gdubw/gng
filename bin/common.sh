@@ -12,15 +12,15 @@ readonly INFO_COLOR='\033[1;96m'
 readonly NO_COLOR='\033[0m' # No Color
 readonly ERROR_COLOR='\033[0;31m'
 
-err() {
+function err() {
   echo -e "${ERROR_COLOR}$*${NO_COLOR}\n" >&2
 }
 
-info() {
+function info() {
   echo -e "${INFO_COLOR}$*${NO_COLOR}\n"
 }
 
-die() {
+function die() {
   local exit_status=$?
   err "$@" "($(caller))"
   if [ "$exit_status" = "0" ]; then

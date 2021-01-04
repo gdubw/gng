@@ -138,7 +138,7 @@ install() {
   GNG_ROOT="$(abs_dirname "$0")"
 
   mkdir -p "${PREFIX}/bin"
-  cp -R "${GNG_ROOT}/bin/gng" "${PREFIX}/bin"
+  cp -R "${GNG_ROOT}/bin/" "${PREFIX}/bin"
   cp -R "${GNG_ROOT}/gradle" "${PREFIX}/"
 
   info "Installed gng to $PREFIX"
@@ -146,7 +146,7 @@ install() {
   ln -s "${PREFIX}"/bin/gng /usr/local/bin/gng
 }
 
-case "$1" in
+case "${1:-}" in
 -h)
   usage
   exit 1

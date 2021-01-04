@@ -1,10 +1,23 @@
 #!/usr/bin/env bash
-cd "$(dirname "${BASH_SOURCE[0]}")" || {
-  echo "Failed to change to script's directory!(${BASH_SOURCE[0]})"
-  exit 1
-}
-source common.sh || {
-  echo "Failed to load common.sh"
+readonly SAVED_OPTS="$(
+  shopt -po
+  shopt -p
+)"
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  TARGET="$(readlink "$SOURCE")"
+  if [[ $TARGET == /* ]]; then
+    SOURCE="$TARGET"
+  else
+    DIR="$(dirname "$SOURCE")"
+    SOURCE="$DIR/$TARGET" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+  fi
+done
+DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
+
+# shellcheck disable=SC1090
+source "${DIR}/common.sh" || {
+  echo "Failed to load common.sh in ${DIR}"
   exit 1
 }
 
@@ -59,21 +72,25 @@ GWO_AGENT_CFG="${HOME}/.gradle/gwo-agent.cfg"
 gradle() {
   local gradle
   gradle=$(select_gradle "${PWD}")
-  # Say what we are gonna do, then do it.
   info "Using gradle at '${gradle}' to run"
   if [ -f "${GWO_AGENT}" ] && [ -f "${GWO_AGENT_CFG}" ]; then
-    local -a arr
+    local url
     while IFS='=' read -r k v; do
-      arr["$k"]="$v"
+      case "${k}" in
+      url)
+        url="${v}"
+        ;;
+      esac
     done <"${GWO_AGENT_CFG}"
-    local url="${arr['url']}"
     if [ -z "${url}" ]; then
       err "Missing url configuration in ${GWO_AGENT_CFG}"
     else
       info "Replacing gradlew distributionUrl with ${url} using gwo-agent."
-      export GRADLE_OPTS="${GRADLE_OPTS} -javaagent:${GWO_AGENT}=distributionUrl~=@https://services.gradle.org/distributions@${url}/@"
+      export GRADLE_OPTS="${GRADLE_OPTS:-} -javaagent:${GWO_AGENT}=distributionUrl~=@https://services.gradle.org/distributions@${url}/@"
     fi
   fi
+  # Restore shell options
+  eval "${SAVED_OPTS}"
   "${gradle}" "$@"
 }
 
@@ -122,7 +139,7 @@ init() {
   "${gradle}" "$@"
 }
 
-case "$1" in
+case "${1:-}" in
 --bootstrap)
   command -v java >/dev/null 2>&1 || die "ERROR: no 'java' command could be found in your PATH."
   shift
