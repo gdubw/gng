@@ -1,50 +1,12 @@
 #!/usr/bin/env bash
-set -o errexit
-set -o nounset
-set -o pipefail
-set -o errtrace
-DEBUG="${DEBUG:-0}"
-if [[ "${DEBUG}" == 1 ]]; then
-  set -x
-fi
-export SHELLOPTS
-
-readonly INFO_COLOR='\033[1;96m'
-readonly NO_COLOR='\033[0m' # No Color
-readonly ERROR_COLOR='\033[0;31m'
-
-err() {
-  echo -e "${ERROR_COLOR}$*${NO_COLOR}" >&2
+cd "$(dirname "${BASH_SOURCE[0]}")" || {
+  echo "Failed to change to script's directory!(${BASH_SOURCE[0]})"
+  exit 1
 }
-
-info() {
-  echo -e "${INFO_COLOR}$*${NO_COLOR}"
+source common.sh || {
+  echo "Failed to load common.sh"
+  exit 1
 }
-
-die() {
-  local exit_status=$?
-  err "$@" "($(caller))"
-  if [ "$exit_status" = "0" ]; then
-    exit 1
-  else
-    exit $exit_status
-  fi
-}
-
-__errorCallBack__() {
-  local exit_status=$?
-  local trace_info
-  trace_info=$(
-    local frame=0
-    while caller ${frame}; do
-      ((frame++))
-    done
-  )
-  err "ErrorStack =>
-${trace_info}"
-  exit $exit_status
-}
-trap '__errorCallBack__' ERR
 
 # DEFAULTS may be overridden by calling environment.
 readonly GRADLE="${GRADLE:-gradle}"
@@ -92,11 +54,26 @@ select_gradle() {
   return 1
 }
 
+GWO_AGENT="${HOME}/.gradle/gwo-agent.jar"
+GWO_AGENT_CFG="${HOME}/.gradle/gwo-agent.cfg"
 gradle() {
   local gradle
   gradle=$(select_gradle "${PWD}")
   # Say what we are gonna do, then do it.
-  info "Using gradle at '${gradle}' to run\n"
+  info "Using gradle at '${gradle}' to run"
+  if [ -f "${GWO_AGENT}" ] && [ -f "${GWO_AGENT_CFG}" ]; then
+    local -a arr
+    while IFS='=' read -r k v; do
+      arr["$k"]="$v"
+    done <"${GWO_AGENT_CFG}"
+    local url="${arr['url']}"
+    if [ -z "${url}" ]; then
+      err "Missing url configuration in ${GWO_AGENT_CFG}"
+    else
+      info "Replacing gradlew distributionUrl with ${url} using gwo-agent."
+      export GRADLE_OPTS="${GRADLE_OPTS} -javaagent:${GWO_AGENT}=distributionUrl~=@https://services.gradle.org/distributions@${url}/@"
+    fi
+  fi
   "${gradle}" "$@"
 }
 
