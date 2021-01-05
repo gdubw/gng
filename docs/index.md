@@ -99,7 +99,7 @@ I am still working on it ...
 ```bash
 git clone https://github.com/dantesun/gng.git
 cd gng
-sudo ./install
+sudo ./install.sh
 ```
 
 ## Aliasing the `gradle` command
