@@ -56,25 +56,29 @@ lookup() {
   done
 }
 
-function copyWrapper() {
-  cp -fR "${__GRADLE_HOME__}/gradle" .
-  cp -f "${__GRADLE_HOME__}/gradlew" .
-  cp -f "${__GRADLE_HOME__}/gradlew.bat" .
-}
-
 __GRADLE_HOME__=$(mktemp -d -t gng)
 __EMPTY_GRADLE_BUILD_FILE="${__GRADLE_HOME__}/build.gradle"
 [ -f "${__EMPTY_GRADLE_BUILD_FILE}" ] || {
   touch "${__EMPTY_GRADLE_BUILD_FILE}"
 }
-#trap 'rm -rf ${__GRADLE_HOME__}' EXIT
+trap 'rm -rf ${__GRADLE_HOME__}' EXIT
 #Embedded Gradle Wrapper
-function __gradlew__() {
+function __gradlew__wrapper() {
   (
     # Restore shell options
     eval "${SAVED_OPTS}"
+    local version="${1}"
+    local type="${2}"
+    local gwoUrl="${3}"
+    info "Running the embedded Gradle Wrapper. \n(If you are running gng for the first time, it will download gradle-1.0-bin.zip from services.gradle.org.)"
     java -classpath /opt/gng/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain \
-      -q --no-daemon -g "${__GRADLE_HOME__}" -I "${DIR}/../gradle/init.gradle" -b "${__EMPTY_GRADLE_BUILD_FILE}" "$@"
+      -q --no-daemon -g "${__GRADLE_HOME__}" -I "${DIR}/../gradle/init.gradle" -b "${__EMPTY_GRADLE_BUILD_FILE}" \
+      -Pver="${version}" -PdistType="${type}" -PgwoUrl="${gwoUrl}" wrapper
+    info "Installing Gradle Wrapper with Gradle ${version} in ${PWD}..."
+    mkdir -p gradle/wrapper
+    for f in "gradle/wrapper/gradle-wrapper.jar" "gradle/wrapper/gradle-wrapper.properties" "gradlew" "gradlew.bat"; do
+      cp -f "${__GRADLE_HOME__}/${f}" "${PWD}/${f}"
+    done
   )
 }
 
@@ -102,7 +106,6 @@ gradle() {
     # Restore shell options
     eval "${SAVED_OPTS}"
     if [ -n "${GWO_DISTRIBUTION_URL}" ]; then
-      info "Replacing gradlew distributionUrl with ${GWO_DISTRIBUTION_URL} using gwo-agent."
       export GRADLE_OPTS="${GRADLE_OPTS:-} -javaagent:${GWO_AGENT}=distributionUrl~=@https://services.gradle.org/distributions@${GWO_DISTRIBUTION_URL}/@"
     fi
     "${gradle}" "$@"
@@ -129,14 +132,14 @@ function install() {
   esac
 
   if [[ "${gradle_version}" == "latest" ]]; then
-    info "Fetching the latest Gradle version"
+    info "Fetching the latest Gradle version from services.gradle.org"
     local gradle_version_info
-    gradle_version_info=$(curl -sSL "https://services.gradle.org/versions/current")
+    gradle_version_info=$(curl -m 60 -sSL "https://services.gradle.org/versions/current")
     gradle_version=$(echo "$gradle_version_info" | python -c "import json,sys;obj=json.load(sys.stdin);print obj['version'];")
+    info "The latest Gradle version is ${gradle_version}"
   fi
 
-  info "Running the embedded wrapper ..."
-  __gradlew__ -Pver="${gradle_version}" -PdistType="${distType}" -PgwoUrl="${GWO_DISTRIBUTION_URL:-}" wrapper
+  __gradlew__wrapper "${gradle_version}" "${distType}" "${GWO_DISTRIBUTION_URL:-}"
   # Clean the temporary cache dir
   rm -rf .gradle
 }

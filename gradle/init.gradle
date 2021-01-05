@@ -1,5 +1,5 @@
 import java.util.regex.Matcher
-println "version :${ver}"
+
 gradle.rootProject {
     task wrapper(type: Wrapper) {
         //set Gradle Version to Wrapper Task
@@ -10,21 +10,22 @@ gradle.rootProject {
             def wrapperProps = new Properties()
             propertiesFile.withInputStream { wrapperProps.load(it) }
             def urlStr = wrapperProps.get("distributionUrl")
-            println("[gng] Checking url ${urlStr}")
             if (urlStr =~ /^(http[s]?:\/\/services.gradle.org\/distributions)\/gradle-(.*)-(bin|all).zip/) {
                 def prefix = Matcher.lastMatcher.group(1)
                 def version = Matcher.lastMatcher.group(2)
-                if (null != gwoUrl) {
+                println "${prefix}, ${version}, ${distType}"
+                if (null != gwoUrl && !gwoUrl.trim().isEmpty()) {
+                    println "[gng] INFO Replacing offical distribution url with ${gwoUrl}"
                     prefix = gwoUrl
                 } else if (prefix =~ /http:\/\/(.*)/) {
-                    // replace http with https
+                    // Earlier version of Gradle wrapper generates distributionUrl of 'http', not 'https'.
+                    // So replace http with https since services.gradle.org not allow 'http' anymore.
                     prefix = "https://" + Matcher.lastMatcher.group(1)
                 }
-                wrapperProps.setProperty("distributionUrl", "${prefix}/gradle-${version}-${distType}.zip")
+                wrapperProps.setProperty("distributionUrl", "${prefix}/gradle-${ver}-${distType}.zip")
                 propertiesFile.withOutputStream { wrapperProps.store(it, "Created by GNG") }
             } else {
-                println "[gng] ERROR ${urlStr} doesn't match pattern 'http[s]?://services.gradle.org/distributions'"
-                throw new Exception("${urlStr} doesn't match pattern 'http[s]?://services.gradle.org/distributions'");
+                println "[gng] WARNING unrecognized distributilUrl: ${urlStr}"
             }
         }
     }

@@ -17,7 +17,7 @@ ensure_root() {
 }
 
 resolve_link() {
-  $(type -p greadlink readlink | head -1) "$1"
+  $(command -v greadlink readlink) "$1"
 }
 
 abs_dirname() {
