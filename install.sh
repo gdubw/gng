@@ -38,6 +38,7 @@ abs_dirname() {
 uninstall() {
   ensure_root
   rm -f /usr/local/bin/gng
+  rm -f /usr/local/bin/gw
   rm -rf /opt/gng
   info "gng is uninstalled."
 }
@@ -144,6 +145,7 @@ install() {
   info "Installed gng to $PREFIX"
 
   ln -s "${PREFIX}"/bin/gng /usr/local/bin/gng
+  ln -s "${PREFIX}"/bin/gng /usr/local/bin/gw
 }
 
 case "${1:-}" in
