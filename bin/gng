@@ -22,11 +22,15 @@ source "${DIR}/common.sh" || {
 }
 
 GWO_AGENT="${HOME}/.gradle/gwo-agent.jar"
-GWO_AGENT_CFG="${HOME}/.gradle/gwo-agent.cfg"
-if [ -f "${GWO_AGENT}" ] && [ -f "${GWO_AGENT_CFG}" ]; then
+GWO_AGENT_CFG="${HOME}/.gradle/gng.cfg"
+if [ -f "${GWO_AGENT_CFG}" ]; then
   while IFS='=' read -r k v; do
     case "${k}" in
-    url)
+    gwo_url)
+      if ! [ -f "${GWO_AGENT}" ]; then
+        info "Found Gradle Wrapper Override Agent configuration, but no gwo agent jar file, downloading it automatically."
+        curl --fail -o "${GWO_AGENT}" https://jitpack.io/com/github/ddimtirov/gwo-agent/1.2.0/gwo-agent-1.2.0.jar
+      fi
       GWO_DISTRIBUTION_URL="${v}"
       ;;
     esac
@@ -83,13 +87,12 @@ function __gradlew__wrapper() {
 }
 
 select_gradle() {
-  local dir="${1}"
+  local dir="${1:-}"
   # Use project's gradlew if found.
   local gradlew
   gradlew=$(lookup "${GRADLEW}" "${dir}")
   if [[ -z "${gradlew}" ]]; then
-    err "No ${GRADLEW} set up for this project; Please use 'gng --bootstrap' installing a Gradle Wrapper'."
-    return 1
+    die "No ${GRADLEW} set up for this project; Please use 'gng --bootstrap' installing a Gradle Wrapper'."
   else
     echo "${gradlew}"
     return 0
@@ -105,8 +108,8 @@ gradle() {
   (
     # Restore shell options
     eval "${SAVED_OPTS}"
-    if [ -n "${GWO_DISTRIBUTION_URL}" ]; then
-      export GRADLE_OPTS="${GRADLE_OPTS:-} -javaagent:${GWO_AGENT}=distributionUrl~=@https://services.gradle.org/distributions@${GWO_DISTRIBUTION_URL}/@"
+    if [ -n "${GWO_DISTRIBUTION_URL}" ] && [ -f "${GWO_AGENT}" ]; then
+      export GRADLE_OPTS="${GRADLE_OPTS:-} -Dgwo.debug.resolution=true -javaagent:${GWO_AGENT}=distributionUrl~=@https://services.gradle.org/distributions@${GWO_DISTRIBUTION_URL}/@"
     fi
     "${gradle}" "$@"
   )
@@ -148,12 +151,15 @@ function install() {
 init() {
   info "Initializing a Gradle project ..."
   local gradle
-  gradle=$(select_gradle)
+  gradle=$(select_gradle "${PWD}")
   if [[ -z ${gradle} ]]; then
     install
-    gradle=$(select_gradle)
+    gradle=$(select_gradle "${PWD}")
   fi
-  "${gradle}" "$@"
+  (
+    eval "${SAVED_OPTS}"
+    "${gradle}" "$@"
+  )
 }
 
 case "${1:-}" in
@@ -164,6 +170,9 @@ case "${1:-}" in
   ;;
 init)
   init "$@"
+  ;;
+wrapper)
+  die "Gradle 'wrapper' task is not allowed when you are using gng. Please use gng --bootstrap [version] instead."
   ;;
 *)
   gradle "$@"

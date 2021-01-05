@@ -12,8 +12,6 @@ gradle.rootProject {
             def urlStr = wrapperProps.get("distributionUrl")
             if (urlStr =~ /^(http[s]?:\/\/services.gradle.org\/distributions)\/gradle-(.*)-(bin|all).zip/) {
                 def prefix = Matcher.lastMatcher.group(1)
-                def version = Matcher.lastMatcher.group(2)
-                println "${prefix}, ${version}, ${distType}"
                 if (null != gwoUrl && !gwoUrl.trim().isEmpty()) {
                     println "[gng] INFO Replacing offical distribution url with ${gwoUrl}"
                     prefix = gwoUrl
