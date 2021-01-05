@@ -1,22 +1,30 @@
+import java.util.regex.Matcher
+
 gradle.rootProject {
     task wrapper(type: Wrapper) {
+        //set Gradle Version to Wrapper Task
         gradleVersion = "${ver}"
+
         doLast {
             // The Gradle distribution site only supports https download now.
             def wrapperProps = new Properties()
             propertiesFile.withInputStream { wrapperProps.load(it) }
             def urlStr = wrapperProps.get("distributionUrl")
-            def url = new URL(urlStr)
-            def distFile = url.getFile()
-            if("all" == "${distType}".toString()) {
-                distFile = distFile.replaceAll("(gradle-.*)-bin.zip", "\$1-all.zip")
+            if (urlStr =~ /^(http[s]?:\/\/services.gradle.org\/distributions)\/gradle-(.*)-(bin|all).zip/) {
+                def prefix = Matcher.lastMatcher.group(1)
+                if (null != gwoUrl && !gwoUrl.trim().isEmpty()) {
+                    println "[gng] INFO Replacing offical distribution url with ${gwoUrl}"
+                    prefix = gwoUrl
+                } else if (prefix =~ /http:\/\/(.*)/) {
+                    // Earlier version of Gradle wrapper generates distributionUrl of 'http', not 'https'.
+                    // So replace http with https since services.gradle.org not allow 'http' anymore.
+                    prefix = "https://" + Matcher.lastMatcher.group(1)
+                }
+                wrapperProps.setProperty("distributionUrl", "${prefix}/gradle-${ver}-${distType}.zip")
+                propertiesFile.withOutputStream { wrapperProps.store(it, "Created by GNG") }
+            } else {
+                println "[gng] WARNING unrecognized distributilUrl: ${urlStr}"
             }
-            if("http" == url.protocol) {
-                url = new URL("https", url.getHost(), url.getPort(), distFile, url.getRef());
-                wrapperProps.setProperty("distributionUrl", url.toString())
-                propertiesFile.withOutputStream { wrapperProps.store(it, "Created by GNG.") }
-            }
-            println("[GNG] Gradle Wrapper ${gradleVersion} installed, distributionUrl=${url}")
         }
     }
 }

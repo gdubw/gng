@@ -1,119 +1,180 @@
 #!/usr/bin/env bash
+readonly SAVED_OPTS="$(
+  shopt -po
+  shopt -p
+)"
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  TARGET="$(readlink "$SOURCE")"
+  if [[ $TARGET == /* ]]; then
+    SOURCE="$TARGET"
+  else
+    DIR="$(dirname "$SOURCE")"
+    SOURCE="$DIR/$TARGET" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+  fi
+done
+DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
 
-DEBUG="${DEBUG:-0}"
-if [[ "${DEBUG}" = 1 ]]; then
-    set -x
-fi
-
-set -e
-set -o pipefail
-# DEFAULTS may be overridden by calling environment.
-GRADLE="${GRADLE:-gradle}"
-GRADLEW="${GRADLEW:-gradlew}"
-GRADLE_BUILDFILE="${GRADLE_BUILDFILE:-build.gradle}"
-GRADLE_KTS_BUILDFILE="${GRADLE_KTS_BUILDFILE:-build.gradle.kts}"
-
-die() {
-    echo -e "${@}" >&2
-    exit 1
+# shellcheck disable=SC1090
+source "${DIR}/common.sh" || {
+  echo "Failed to load common.sh in ${DIR}"
+  exit 1
 }
 
-lookup() {
-    local file="${1}"
-    local curr_path="${2}"
-    [[ -z "${curr_path}" ]] && curr_path="${PWD}"
+GWO_AGENT="${HOME}/.gradle/gwo-agent.jar"
+GWO_AGENT_CFG="${HOME}/.gradle/gng.cfg"
+if [ -f "${GWO_AGENT_CFG}" ]; then
+  while IFS='=' read -r k v; do
+    case "${k}" in
+    gwo_url)
+      if ! [ -f "${GWO_AGENT}" ]; then
+        info "Found Gradle Wrapper Override Agent configuration, but no gwo agent jar file, downloading it automatically."
+        curl --fail -o "${GWO_AGENT}" https://jitpack.io/com/github/ddimtirov/gwo-agent/1.2.0/gwo-agent-1.2.0.jar
+      fi
+      GWO_DISTRIBUTION_URL="${v}"
+      ;;
+    esac
+  done <"${GWO_AGENT_CFG}"
+fi
+readonly GWO_DISTRIBUTION_URL
 
-    # Search recursively upwards for file.
-    until [[ "${curr_path}" == "/" ]]; do
-        if [[ -e "${curr_path}/${file}" ]]; then
-            echo "${curr_path}/${file}"
-            break
-        else
-            curr_path=$(dirname "${curr_path}")
-        fi
+# DEFAULTS may be overridden by calling environment.
+readonly GRADLE="${GRADLE:-gradle}"
+readonly GRADLEW="${GRADLEW:-gradlew}"
+readonly GRADLE_BUILDFILE="${GRADLE_BUILDFILE:-build.gradle}"
+readonly GRADLE_KTS_BUILDFILE="${GRADLE_KTS_BUILDFILE:-build.gradle.kts}"
+
+lookup() {
+  local file="${1}"
+  local curr_path="${2}"
+  [[ -z "${curr_path}" ]] && curr_path="${PWD}"
+
+  # Search recursively upwards for file.
+  until [[ "${curr_path}" == "/" ]]; do
+    if [[ -e "${curr_path}/${file}" ]]; then
+      echo "${curr_path}/${file}"
+      break
+    else
+      curr_path=$(dirname "${curr_path}")
+    fi
+  done
+}
+
+__GRADLE_HOME__=$(mktemp -d -t gng)
+__EMPTY_GRADLE_BUILD_FILE="${__GRADLE_HOME__}/build.gradle"
+[ -f "${__EMPTY_GRADLE_BUILD_FILE}" ] || {
+  touch "${__EMPTY_GRADLE_BUILD_FILE}"
+}
+trap 'rm -rf ${__GRADLE_HOME__}' EXIT
+#Embedded Gradle Wrapper
+function __gradlew__wrapper() {
+  (
+    # Restore shell options
+    eval "${SAVED_OPTS}"
+    local version="${1}"
+    local type="${2}"
+    local gwoUrl="${3}"
+    info "Running the embedded Gradle Wrapper. \n(If you are running gng for the first time, it will download gradle-1.0-bin.zip from services.gradle.org.)"
+    java -classpath /opt/gng/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain \
+      -q --no-daemon -g "${__GRADLE_HOME__}" -I "${DIR}/../gradle/init.gradle" -b "${__EMPTY_GRADLE_BUILD_FILE}" \
+      -Pver="${version}" -PdistType="${type}" -PgwoUrl="${gwoUrl}" wrapper
+    info "Installing Gradle Wrapper with Gradle ${version} in ${PWD}..."
+    mkdir -p gradle/wrapper
+    for f in "gradle/wrapper/gradle-wrapper.jar" "gradle/wrapper/gradle-wrapper.properties" "gradlew" "gradlew.bat"; do
+      cp -f "${__GRADLE_HOME__}/${f}" "${PWD}/${f}"
     done
+  )
 }
 
 select_gradle() {
-    local dir="${1}"
+  local dir="${1:-}"
+  # Use project's gradlew if found.
+  local gradlew
+  gradlew=$(lookup "${GRADLEW}" "${dir}")
+  if [[ -z "${gradlew}" ]]; then
+    die "No ${GRADLEW} set up for this project; Please use 'gng --bootstrap' installing a Gradle Wrapper'."
+  else
+    echo "${gradlew}"
+    return 0
+  fi
 
-    # Use project's gradlew if found.
-    local gradlew=$(lookup "${GRADLEW}" "${dir}")
-    if [[ -z "${gradlew}" ]]; then
-        die "No ${GRADLEW} set up for this project; Please use 'gng --bootstrap \${version}'."
-    else
-        echo "${gradlew}"
-        return 0
-    fi
-
-    return 1
+  return 1
 }
 
-execute_gradle() {
-    local build_gradle=$(lookup "${GRADLE_BUILDFILE}")
-    local build_gradle_kts=$(lookup "${GRADLE_KTS_BUILDFILE}")
-    local gradle=$(select_gradle)
-
-    if [[ -n "${build_gradle}" ]] || [[ -n "${build_gradle_kts}" ]]; then
-        local ktsDirName="$(dirname "${build_gradle_kts}")"
-        local dirName="$(dirname "${build_gradle}")"
-        if ((${#ktsDirName} > ${#dirName}))
-        then
-            build_gradle=${build_gradle_kts}
-        fi
-        # We got a good build file, start gradlew there.
-        cd "$(dirname "${build_gradle}")"
-    else
-        die "Unable to find a gradle build file named ${GRADLE_BUILDFILE} or ${GRADLE_KTS_BUILDFILE}."
+gradle() {
+  local gradle
+  gradle=$(select_gradle "${PWD}")
+  info "Using gradle at '${gradle}' to run"
+  (
+    # Restore shell options
+    eval "${SAVED_OPTS}"
+    if [ -n "${GWO_DISTRIBUTION_URL}" ] && [ -f "${GWO_AGENT}" ]; then
+      export GRADLE_OPTS="${GRADLE_OPTS:-} -Dgwo.debug.resolution=true -javaagent:${GWO_AGENT}=distributionUrl~=@https://services.gradle.org/distributions@${GWO_DISTRIBUTION_URL}/@"
     fi
-
-    # Say what we are gonna do, then do it.
-    echo "Using gradle at '${gradle}' to run buildfile '${build_gradle}'"
     "${gradle}" "$@"
+  )
 }
 
 function install() {
-    local saved_params=()
-    local gradle_version="latest"
-    local distType="bin"
-    if [[ $# -gt 0 ]]; then
-        gradle_version="$1"
-        shift
-    fi
-    if [[ $# -gt 0 ]]; then
-        distType="$1"
-        shift
-    fi
-    case "${distType}" in
-    "all"|"bin")
-    ;;
-    *)
+  local gradle_version="latest"
+  local distType="bin"
+  if [[ $# -gt 0 ]]; then
+    gradle_version="$1"
+    shift
+  fi
+  if [[ $# -gt 0 ]]; then
+    distType="$1"
+    shift
+  fi
+  case "${distType}" in
+  "all" | "bin") ;;
+
+  *)
     die "wrong distType: ${distType}(all, bin)"
     ;;
-    esac
+  esac
 
-    if [[ "${gradle_version}" = "latest" ]]; then
-        echo "Fetching the latest Gradle version"
-        local gradle_version_info=$(curl -sSL "https://services.gradle.org/versions/current")
-        gradle_version=$(echo "$gradle_version_info" | python -c "import json,sys;obj=json.load(sys.stdin);print obj['version'];")
-    fi
+  if [[ "${gradle_version}" == "latest" ]]; then
+    info "Fetching the latest Gradle version from services.gradle.org"
+    local gradle_version_info
+    gradle_version_info=$(curl -m 60 -sSL "https://services.gradle.org/versions/current")
+    gradle_version=$(echo "$gradle_version_info" | python -c "import json,sys;obj=json.load(sys.stdin);print obj['version'];")
+    info "The latest Gradle version is ${gradle_version}"
+  fi
 
-
-    local gradle_home=$(mktemp -d)
-    trap 'rm -rf ${gradle_home}' EXIT
-    echo "Running the embedded wrapper ..."
-    java -classpath /opt/gng/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain  \
- -q -g "${gradle_home}" -I "/opt/gng/gradle/init.gradle"  \
- --no-daemon -Pver=${gradle_version} -PdistType=${distType} wrapper
-    # Clean the temporary cache dir
-    rm -rf .gradle
+  __gradlew__wrapper "${gradle_version}" "${distType}" "${GWO_DISTRIBUTION_URL:-}"
+  # Clean the temporary cache dir
+  rm -rf .gradle
 }
 
-if [[ "--bootstrap" = "$1" ]]; then
-    which java > /dev/null 2>&1 || die "ERROR: no 'java' command could be found in your PATH."
-    shift
-    install "$@"
-else
-    execute_gradle "$@"
-    exit $?
-fi
+#Support `gradle init` behavior
+init() {
+  info "Initializing a Gradle project ..."
+  local gradle
+  gradle=$(select_gradle "${PWD}")
+  if [[ -z ${gradle} ]]; then
+    install
+    gradle=$(select_gradle "${PWD}")
+  fi
+  (
+    eval "${SAVED_OPTS}"
+    "${gradle}" "$@"
+  )
+}
+
+case "${1:-}" in
+--bootstrap)
+  command -v java >/dev/null 2>&1 || die "ERROR: no 'java' command could be found in your PATH."
+  shift
+  install "$@"
+  ;;
+init)
+  init "$@"
+  ;;
+wrapper)
+  die "Gradle 'wrapper' task is not allowed when you are using gng. Please use gng --bootstrap [version] instead."
+  ;;
+*)
+  gradle "$@"
+  ;;
+esac
