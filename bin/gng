@@ -21,6 +21,19 @@ source "${DIR}/common.sh" || {
   exit 1
 }
 
+GWO_AGENT="${HOME}/.gradle/gwo-agent.jar"
+GWO_AGENT_CFG="${HOME}/.gradle/gwo-agent.cfg"
+if [ -f "${GWO_AGENT}" ] && [ -f "${GWO_AGENT_CFG}" ]; then
+  while IFS='=' read -r k v; do
+    case "${k}" in
+    url)
+      GWO_DISTRIBUTION_URL="${v}"
+      ;;
+    esac
+  done <"${GWO_AGENT_CFG}"
+fi
+readonly GWO_DISTRIBUTION_URL
+
 # DEFAULTS may be overridden by calling environment.
 readonly GRADLE="${GRADLE:-gradle}"
 readonly GRADLEW="${GRADLEW:-gradlew}"
@@ -43,12 +56,26 @@ lookup() {
   done
 }
 
-__GRADLE_HOME__=$(mktemp -d)
-trap 'rm -rf ${__GRADLE_HOME__}' EXIT
+function copyWrapper() {
+  cp -fR "${__GRADLE_HOME__}/gradle" .
+  cp -f "${__GRADLE_HOME__}/gradlew" .
+  cp -f "${__GRADLE_HOME__}/gradlew.bat" .
+}
+
+__GRADLE_HOME__=$(mktemp -d -t gng)
+__EMPTY_GRADLE_BUILD_FILE="${__GRADLE_HOME__}/build.gradle"
+[ -f "${__EMPTY_GRADLE_BUILD_FILE}" ] || {
+  touch "${__EMPTY_GRADLE_BUILD_FILE}"
+}
+#trap 'rm -rf ${__GRADLE_HOME__}' EXIT
 #Embedded Gradle Wrapper
 function __gradlew__() {
-  java -classpath /opt/gng/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain \
-    -q --no-daemon -g "${__GRADLE_HOME__}" -I "/opt/gng/gradle/init.gradle" "$@"
+  (
+    # Restore shell options
+    eval "${SAVED_OPTS}"
+    java -classpath /opt/gng/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain \
+      -q --no-daemon -g "${__GRADLE_HOME__}" -I "${DIR}/../gradle/init.gradle" -b "${__EMPTY_GRADLE_BUILD_FILE}" "$@"
+  )
 }
 
 select_gradle() {
@@ -67,35 +94,22 @@ select_gradle() {
   return 1
 }
 
-GWO_AGENT="${HOME}/.gradle/gwo-agent.jar"
-GWO_AGENT_CFG="${HOME}/.gradle/gwo-agent.cfg"
 gradle() {
   local gradle
   gradle=$(select_gradle "${PWD}")
   info "Using gradle at '${gradle}' to run"
-  if [ -f "${GWO_AGENT}" ] && [ -f "${GWO_AGENT_CFG}" ]; then
-    local url
-    while IFS='=' read -r k v; do
-      case "${k}" in
-      url)
-        url="${v}"
-        ;;
-      esac
-    done <"${GWO_AGENT_CFG}"
-    if [ -z "${url}" ]; then
-      err "Missing url configuration in ${GWO_AGENT_CFG}"
-    else
-      info "Replacing gradlew distributionUrl with ${url} using gwo-agent."
-      export GRADLE_OPTS="${GRADLE_OPTS:-} -javaagent:${GWO_AGENT}=distributionUrl~=@https://services.gradle.org/distributions@${url}/@"
+  (
+    # Restore shell options
+    eval "${SAVED_OPTS}"
+    if [ -n "${GWO_DISTRIBUTION_URL}" ]; then
+      info "Replacing gradlew distributionUrl with ${GWO_DISTRIBUTION_URL} using gwo-agent."
+      export GRADLE_OPTS="${GRADLE_OPTS:-} -javaagent:${GWO_AGENT}=distributionUrl~=@https://services.gradle.org/distributions@${GWO_DISTRIBUTION_URL}/@"
     fi
-  fi
-  # Restore shell options
-  eval "${SAVED_OPTS}"
-  "${gradle}" "$@"
+    "${gradle}" "$@"
+  )
 }
 
 function install() {
-  local saved_params=()
   local gradle_version="latest"
   local distType="bin"
   if [[ $# -gt 0 ]]; then
@@ -122,7 +136,7 @@ function install() {
   fi
 
   info "Running the embedded wrapper ..."
-  __gradlew__ -Pver="${gradle_version}" -PdistType="${distType}" wrapper
+  __gradlew__ -Pver="${gradle_version}" -PdistType="${distType}" -PgwoUrl="${GWO_DISTRIBUTION_URL:-}" wrapper
   # Clean the temporary cache dir
   rm -rf .gradle
 }
