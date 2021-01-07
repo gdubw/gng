@@ -21,22 +21,18 @@ source "${DIR}/common.sh" || {
   exit 1
 }
 
-GWO_AGENT="${HOME}/.gradle/gwo-agent.jar"
-GWO_AGENT_CFG="${HOME}/.gradle/gng.cfg"
-if [ -f "${GWO_AGENT_CFG}" ]; then
-  while IFS='=' read -r k v; do
-    case "${k}" in
-    gwo_url)
-      if ! [ -f "${GWO_AGENT}" ]; then
-        info "Found Gradle Wrapper Override Agent configuration, but no gwo agent jar file, downloading it automatically."
-        curl --fail -o "${GWO_AGENT}" https://jitpack.io/com/github/ddimtirov/gwo-agent/1.2.0/gwo-agent-1.2.0.jar
-      fi
-      GWO_DISTRIBUTION_URL="${v}"
-      ;;
-    esac
-  done <"${GWO_AGENT_CFG}"
-fi
-readonly GWO_DISTRIBUTION_URL
+readonly GWO_AGENT_JAR=$(cfg_get gwo_jar)
+readonly GWO_AGENT_JAR_AUTO_INSTALL=$(cfg_get gwo_auto_install)
+[[ "true" == "${GWO_AGENT_JAR_AUTO_INSTALL}" ]] && {
+  if [[ -z ${GWO_AGENT_JAR} ]]; then
+    die "'gwo_agent_jar' is not set in ${__GNG_CFG_FILE}."
+  fi
+  info "Found Gradle Wrapper Override Agent configuration, but no gwo agent jar file, downloading it automatically."
+  curl --fail -o "${GWO_AGENT_JAR}" https://jitpack.io/com/github/ddimtirov/gwo-agent/1.2.0/gwo-agent-1.2.0.jar || die "
+Failed to download gwo-agent! Please try again or skip downloading by setting gwo_auto_install to false.
+Visit https://github.com/ddimtirov/gwo-agent for more details.
+"
+}
 
 # DEFAULTS may be overridden by calling environment.
 readonly GRADLE="${GRADLE:-gradle}"
@@ -108,6 +104,8 @@ gradle() {
   (
     # Restore shell options
     eval "${SAVED_OPTS}"
+    local gradle_opts
+    gradle_opts=$(cfg_get GRADLE_OPTS) || :
     if [ -n "${GWO_DISTRIBUTION_URL}" ] && [ -f "${GWO_AGENT}" ]; then
       export GRADLE_OPTS="${GRADLE_OPTS:-} -Dgwo.debug.resolution=true -javaagent:${GWO_AGENT}=distributionUrl~=@https://services.gradle.org/distributions@${GWO_DISTRIBUTION_URL}/@"
     fi
