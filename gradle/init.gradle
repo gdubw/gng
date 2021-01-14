@@ -12,12 +12,12 @@ gradle.rootProject {
             def urlStr = wrapperProps.get("distributionUrl")
             if (urlStr =~ /^(http[s]?:\/\/services.gradle.org\/distributions)\/gradle-(.*)-(bin|all).zip/) {
                 def prefix = Matcher.lastMatcher.group(1)
-                if (null != gwoUrl && !gwoUrl.trim().isEmpty()) {
-                    println "[gng] INFO Replacing offical distribution url with ${gwoUrl}"
-                    prefix = gwoUrl
+                if (null != mirrorUrl && !mirrorUrl.trim().isEmpty()) {
+                    println "[gng] INFO Replacing offical distribution url with ${mirrorUrl}"
+                    prefix = mirrorUrl
                 } else if (prefix =~ /http:\/\/(.*)/) {
                     // Earlier version of Gradle wrapper generates distributionUrl of 'http', not 'https'.
-                    // So replace http with https since services.gradle.org not allow 'http' anymore.
+                    // So replace http with https since services.gradle.org does not allow 'http' anymore.
                     prefix = "https://" + Matcher.lastMatcher.group(1)
                 }
                 wrapperProps.setProperty("distributionUrl", "${prefix}/gradle-${ver}-${distType}.zip")

@@ -9,29 +9,16 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
   if [[ $TARGET == /* ]]; then
     SOURCE="$TARGET"
   else
-    DIR="$(dirname "$SOURCE")"
-    SOURCE="$DIR/$TARGET" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    SELF_DIR="$(dirname "$SOURCE")"
+    SOURCE="$SELF_DIR/$TARGET" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
   fi
 done
-DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
+SELF_DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
 
 # shellcheck disable=SC1090
-source "${DIR}/common.sh" || {
-  echo "Failed to load common.sh in ${DIR}"
+source "${SELF_DIR}/common.sh" || {
+  echo "Failed to load common.sh in ${SELF_DIR}"
   exit 1
-}
-
-readonly GWO_AGENT_JAR=$(cfg_get gwo_jar)
-readonly GWO_AGENT_JAR_AUTO_INSTALL=$(cfg_get gwo_auto_install)
-[[ "true" == "${GWO_AGENT_JAR_AUTO_INSTALL}" ]] && {
-  if [[ -z ${GWO_AGENT_JAR} ]]; then
-    die "'gwo_agent_jar' is not set in ${__GNG_CFG_FILE}."
-  fi
-  info "Found Gradle Wrapper Override Agent configuration, but no gwo agent jar file, downloading it automatically."
-  curl --fail -o "${GWO_AGENT_JAR}" https://jitpack.io/com/github/ddimtirov/gwo-agent/1.2.0/gwo-agent-1.2.0.jar || die "
-Failed to download gwo-agent! Please try again or skip downloading by setting gwo_auto_install to false.
-Visit https://github.com/ddimtirov/gwo-agent for more details.
-"
 }
 
 # DEFAULTS may be overridden by calling environment.
@@ -39,6 +26,19 @@ readonly GRADLE="${GRADLE:-gradle}"
 readonly GRADLEW="${GRADLEW:-gradlew}"
 readonly GRADLE_BUILDFILE="${GRADLE_BUILDFILE:-build.gradle}"
 readonly GRADLE_KTS_BUILDFILE="${GRADLE_KTS_BUILDFILE:-build.gradle.kts}"
+
+declare -a __GNG_CONFIG
+function load_config() {
+  local curr_path="${1}"
+  local cfg_file="${curr_path}/gradle/gng.cfg"
+  [ -f "${cfg_file}" ] && {
+    #If __GNG_CONFIG is readonly(unset will fail if it is not.), means we already load the cfg_file into this array
+    if (unset __GNG_CONFIG 2>/dev/null); then
+      IFS=$'\n' read -r -d $'\0' -a __GNG_CONFIG < <(__load_cfg <"${cfg_file}" && printf '\0')
+      readonly __GNG_CONFIG
+    fi
+  }
+}
 
 lookup() {
   local file="${1}"
@@ -56,6 +56,15 @@ lookup() {
   done
 }
 
+function cfg_get() {
+  local key="${1}"
+  for kv in "${__GNG_CONFIG[@]}"; do
+    if [[ ${kv} =~ ^${key}= ]]; then
+      printf "%s" "${kv#${key}=}"
+    fi
+  done
+}
+
 __GRADLE_HOME__=$(mktemp -d -t gng)
 __EMPTY_GRADLE_BUILD_FILE="${__GRADLE_HOME__}/build.gradle"
 [ -f "${__EMPTY_GRADLE_BUILD_FILE}" ] || {
@@ -63,23 +72,33 @@ __EMPTY_GRADLE_BUILD_FILE="${__GRADLE_HOME__}/build.gradle"
 }
 trap 'rm -rf ${__GRADLE_HOME__}' EXIT
 #Embedded Gradle Wrapper
-function __gradlew__wrapper() {
+function __install_gw() {
   (
     # Restore shell options
     eval "${SAVED_OPTS}"
     local version="${1}"
     local type="${2}"
-    local gwoUrl="${3}"
-    info "Running the embedded Gradle Wrapper. \n(If you are running gng for the first time, it will download gradle-1.0-bin.zip from services.gradle.org.)"
+    local mirrorUr="${3}"
+    local dir="${4}"
+    local gradle
+    gradle=$(select_gradle "${dir}" 2>&1 >/dev/null) && {
+      die "${gradle} is exist!"
+    }
+    info "Installing/Upgrading Gradle Wrapper in ${dir} version=${version}, distributionType=${type}, mirrorUr=${mirrorUr} ..."
+    info "(If you are running gng for the first time, it will download gradle-1.0-bin.zip from services.gradle.org for internal use.)"
+    [ -d "${dir}" ] || mkdir "${dir}"
+    cd "${dir}" || die "Failed to change to directory ${dir}"
+    mkdir -p "gradle/wrapper"
     java -classpath /opt/gng/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain \
-      -q --no-daemon -g "${__GRADLE_HOME__}" -I "${DIR}/../gradle/init.gradle" -b "${__EMPTY_GRADLE_BUILD_FILE}" \
-      -Pver="${version}" -PdistType="${type}" -PgwoUrl="${gwoUrl}" wrapper
-    info "Installing Gradle Wrapper with Gradle ${version} in ${PWD}..."
-    mkdir -p gradle/wrapper
+      -q --no-daemon -g "${__GRADLE_HOME__}" -I "${SELF_DIR}/../gradle/init.gradle" -b "${__EMPTY_GRADLE_BUILD_FILE}" \
+      -Pver="${version}" -PdistType="${type}" -PmirrorUrl="${mirrorUr}" wrapper
     for f in "gradle/wrapper/gradle-wrapper.jar" "gradle/wrapper/gradle-wrapper.properties" "gradlew" "gradlew.bat"; do
       cp -f "${__GRADLE_HOME__}/${f}" "${PWD}/${f}"
     done
-  )
+    cp -f "${SELF_DIR}/gng.cfg" "gradle/"
+    rm -rf .gradle
+  ) || die "Failed to install Gradle Wrapper!"
+  # Clean the temporary cache dir
 }
 
 select_gradle() {
@@ -88,7 +107,7 @@ select_gradle() {
   local gradlew
   gradlew=$(lookup "${GRADLEW}" "${dir}")
   if [[ -z "${gradlew}" ]]; then
-    die "No ${GRADLEW} set up for this project; Please use 'gng --bootstrap' installing a Gradle Wrapper'."
+    die "No ${GRADLEW} set up for this project; Please use 'gng bootstrap' installing a Gradle Wrapper'."
   else
     echo "${gradlew}"
     return 0
@@ -99,78 +118,79 @@ select_gradle() {
 
 gradle() {
   local gradle
-  gradle=$(select_gradle "${PWD}")
+  gradle=$(select_gradle "${PWD}") || die "Failed to find gradlew."
   info "Using gradle at '${gradle}' to run"
+  load_config "$(dirname "${gradle}")"
   (
+    GRADLE_OPTS="${GRADLE_OPTS:-} $(cfg_get GRADLE_OPTS)"
+    export GRADLE_OPTS
+    info "GRADLE_OPTS: ${GRADLE_OPTS}"
     # Restore shell options
     eval "${SAVED_OPTS}"
-    local gradle_opts
-    gradle_opts=$(cfg_get GRADLE_OPTS) || :
-    if [ -n "${GWO_DISTRIBUTION_URL}" ] && [ -f "${GWO_AGENT}" ]; then
-      export GRADLE_OPTS="${GRADLE_OPTS:-} -Dgwo.debug.resolution=true -javaagent:${GWO_AGENT}=distributionUrl~=@https://services.gradle.org/distributions@${GWO_DISTRIBUTION_URL}/@"
-    fi
     "${gradle}" "$@"
   )
 }
 
-function install() {
-  local gradle_version="latest"
-  local distType="bin"
-  if [[ $# -gt 0 ]]; then
-    gradle_version="$1"
-    shift
-  fi
-  if [[ $# -gt 0 ]]; then
-    distType="$1"
-    shift
-  fi
-  case "${distType}" in
-  "all" | "bin") ;;
-
-  *)
-    die "wrong distType: ${distType}(all, bin)"
-    ;;
-  esac
-
-  if [[ "${gradle_version}" == "latest" ]]; then
-    info "Fetching the latest Gradle version from services.gradle.org"
-    local gradle_version_info
-    gradle_version_info=$(curl -m 60 -sSL "https://services.gradle.org/versions/current")
-    gradle_version=$(echo "$gradle_version_info" | python -c "import json,sys;obj=json.load(sys.stdin);print obj['version'];")
-    info "The latest Gradle version is ${gradle_version}"
-  fi
-
-  __gradlew__wrapper "${gradle_version}" "${distType}" "${GWO_DISTRIBUTION_URL:-}"
-  # Clean the temporary cache dir
-  rm -rf .gradle
+bootstrap_help() {
+  printf '%s\n' "Generates a Gradle Wrapper"
+  printf 'Usage: gng bootstrap [-v|--version <arg>] [-t|--distribution-type <arg>] [-m|--mirror <arg>] [-h|--help] [ -d|--destination-dir <arg>\n'
+  printf '\t%s\n' "-v, --version: Gradle Version (default: 'latest')"
+  printf '\t%s\n' "-t, --distribution-type: Gradle Distribution Type (default: 'all')"
+  printf '\t%s\n' "-m, --mirror: Gradle Distribution Mirror Site (no default)"
+  printf '\t%s\n' "-d, --destination-dir : The folder location where generated Gradle Wrapper(default: 'Your current working directory retrieved using \${PWD}')"
+  printf '\t%s\n' "-h, --help: Prints help"
 }
-
-#Support `gradle init` behavior
-init() {
-  info "Initializing a Gradle project ..."
-  local gradle
-  gradle=$(select_gradle "${PWD}")
-  if [[ -z ${gradle} ]]; then
-    install
-    gradle=$(select_gradle "${PWD}")
-  fi
-  (
-    eval "${SAVED_OPTS}"
-    "${gradle}" "$@"
-  )
-}
-
 case "${1:-}" in
---bootstrap)
-  command -v java >/dev/null 2>&1 || die "ERROR: no 'java' command could be found in your PATH."
+--bootstrap | bootstrap)
+  [ "${1}" = "--bootstrap" ] && {
+    err "--bootstrap is deprecated, please use 'gng bootstrap' instead, type 'gng bootstrap -h' for details."
+  }
   shift
-  install "$@"
-  ;;
-init)
-  init "$@"
-  ;;
-wrapper)
-  die "Gradle 'wrapper' task is not allowed when you are using gng. Please use gng --bootstrap [version] instead."
+  declare _arg_version _arg_distribution_type _arg_destination_dir
+  _arg_version="latest"
+  _arg_distribution_type="all"
+  _arg_destination_dir="${PWD}"
+  while test $# -gt 0; do
+    _key="$1"
+    case "$_key" in
+    -v | --version)
+      (($# < 2)) && die "Missing value for the argument '$_key'." 1
+      _arg_version="$2"
+      shift
+      ;;
+    -t | --distribution-type)
+      (($# < 2)) && die "Missing value for the argument '$_key'." 1
+      _arg_distribution_type="$2"
+      shift
+      ;;
+    -m | --mirror)
+      (($# < 2)) && die "Missing value for the argument '$_key'." 1
+      _arg_mirror="$2"
+      shift
+      ;;
+    -d | --destination-dir-)
+      (($# < 2)) && die "Missing value for the argument '$_key'." 1
+      _arg_destination_dir="$2"
+      shift
+      ;;
+    -h | --help)
+      bootstrap_help
+      exit 0
+      ;;
+    *)
+      die "Unknown argument ${_key}"
+      ;;
+    esac
+    shift
+  done
+
+  if [[ "${_arg_version}" == "latest" ]]; then
+    info "Fetching the latest Gradle version from services.gradle.org"
+    _arg_version=$(curl -m 60 -sSL "https://services.gradle.org/versions/current" |
+      python -c "import json,sys;obj=json.load(sys.stdin);print obj['version'];") || die "Failed to fetch the version info!"
+    info "The latest Gradle version is ${_arg_version}"
+  fi
+  __install_gw "${_arg_version}" "${_arg_distribution_type}" "${_arg_mirror:-}" "${_arg_destination_dir}"
   ;;
 *)
   gradle "$@"

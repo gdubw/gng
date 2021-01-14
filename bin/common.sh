@@ -102,19 +102,51 @@ The value of ${var} is not found!(${__GNG_CFG_FILE}:${line_no}) All available va
   done
 ) || die
 
-declare -a __GNG_CONFIG
-__GNG_CFG_FILE="${HOME}/.gradle/gng.cfg"
-[ -f "${__GNG_CFG_FILE}" ] && {
-  IFS=$'\n' read -r -d $'\0' -a __GNG_CONFIG < <(__load_cfg <"${__GNG_CFG_FILE}" && printf '\0')
+#Testing awk for parsing properties file(how to do variable substitution?)
+function __get_property() {
+  awk -v key="${1}" -f <(
+    cat - <<-'_EOF_'
+BEGIN {
+    FS="=";
+    n="";
+    v="";
+    c=0; # Not a line continuation.
 }
-readonly __GNG_CONFIG
-
-function cfg_get() {
-  local key="${1}"
-  for kv in "${__GNG_CONFIG[@]}"; do
-    if [[ ${kv} =~ ^${key}= ]]; then
-      printf "%s" "${kv#${key}=}"
-      return 0
-    fi
-  done
+/^($|[:space:]*#)/ { # The line containing whitespaces or is a comment.  Breaks line continuation.
+    c=0;
+    next;
+}
+/\\$/ && (c==0) && (NF>=2) { # Name value pair with a line continuation...
+    e=index($0,"=");
+    n=substr($0,1,e-1);
+    v=substr($0,e+1,length($0) - e - 1);    # Trim off the backslash.
+    c=1;                                    # Line continuation mode.
+    next;
+}
+/^[^\\]+\\$/ && (c==1) { # Line continuation.  Accumulate the value.
+    v= "" v substr($0,1,length($0)-1);
+    next;
+}
+((c==1) || (NF>=2)) && !/^[^\\]+\\$/ { # End of line continuation, or a single line name/value pair
+    if (c==0) {  # Single line name/value pair
+        e=index($0,"=");
+        n=substr($0,1,e-1);
+        v=substr($0,e+1,length($0) - e);
+    } else { # Line continuation mode - last line of the value.
+        c=0; # Turn off line continuation mode.
+        v= "" v $0;
+    }
+    # Make sure the name is a legal shell variable name
+    gsub(/[^A-Za-z0-9_]/,"_",n);
+    # Remove newlines from the value.
+    gsub(/[\n\r]/,"",v);
+#    print n "=\"" v "\"";
+    print v;
+    n = "";
+    v = "";
+}
+END {
+}
+_EOF_
+  )
 }
