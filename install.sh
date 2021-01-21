@@ -1,38 +1,25 @@
 #!/usr/bin/env bash
-
-cd "$(dirname "${BASH_SOURCE[0]}")" || {
-  echo "Failed to change to script's directory!(${BASH_SOURCE[0]})"
-  exit 1
-}
-source bin/common.sh || {
-  echo "Failed to load bin/common.sh"
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  TARGET="$(readlink "$SOURCE")"
+  if [[ $TARGET == /* ]]; then
+    SOURCE="$TARGET"
+  else
+    SELF_DIR="$(dirname "$SOURCE")"
+    SOURCE="$SELF_DIR/$TARGET" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+  fi
+done
+SELF_DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
+# shellcheck disable=SC1090
+source "${SELF_DIR}/bin/common.sh" || {
+  echo "Failed to load common.sh in ${SELF_DIR}"
   exit 1
 }
 
 ensure_root() {
   if ! [[ "0" == "$(id -u)" ]]; then
-    err "Please run as 'root', type '$0 -h' for details."
-    exit 1
+    die "Please run as 'root', type '$0 -h' for details."
   fi
-}
-
-resolve_link() {
-  $(command -v greadlink readlink) "$1"
-}
-
-abs_dirname() {
-  local cwd
-  cwd="$(pwd)"
-  local path="$1"
-
-  while [[ -n "$path" ]]; do
-    cd "${path%/*}" || die "Failed to change directory!"
-    local name="${path##*/}"
-    path="$(resolve_link "$name" || true)"
-  done
-
-  pwd
-  cd "$cwd" || die "Failed to change directory!"
 }
 
 uninstall() {
@@ -131,21 +118,32 @@ check_update() {
   fi
 }
 
+readonly FILE_LIST=(
+  bin/common.sh
+  bin/gng
+  bin/gng.cfg
+  gradle/init.gradle
+  gradle/wrapper/gradle-wrapper.jar
+  gradle/wrapper/gradle-wrapper.properties
+)
+
 install() {
   ensure_root
 
   local PREFIX="${1:-/opt/gng}"
-  local GNG_ROOT
-  GNG_ROOT="$(abs_dirname "$0")"
-
-  mkdir -p "${PREFIX}/bin"
-  cp -R "${GNG_ROOT}/bin/" "${PREFIX}/bin"
-  cp -R "${GNG_ROOT}/gradle" "${PREFIX}/"
 
   info "Installed gng to $PREFIX"
+  for file in ${FILE_LIST[*]}; do
+    local dst_dir
+    dst_dir="${PREFIX}"/$(dirname "${file}")
+    [ -d "${dst_dir}" ] || mkdir -p "${dst_dir}"
+    local src="${SELF_DIR}/${file}"
+    cp -vf "${src}" "${dst_dir}"
+  done
+  chmod 755 "${PREFIX}/bin/gng"
 
-  ln -s "${PREFIX}"/bin/gng /usr/local/bin/gng
-  ln -s "${PREFIX}"/bin/gng /usr/local/bin/gw
+  ln -sv "${PREFIX}"/bin/gng /usr/local/bin/gng
+  ln -sv "${PREFIX}"/bin/gng /usr/local/bin/gw
 }
 
 case "${1:-}" in
