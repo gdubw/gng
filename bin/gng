@@ -22,10 +22,7 @@ source "${SELF_DIR}/common.sh" || {
 }
 
 # DEFAULTS may be overridden by calling environment.
-readonly GRADLE="${GRADLE:-gradle}"
 readonly GRADLEW="${GRADLEW:-gradlew}"
-readonly GRADLE_BUILDFILE="${GRADLE_BUILDFILE:-build.gradle}"
-readonly GRADLE_KTS_BUILDFILE="${GRADLE_KTS_BUILDFILE:-build.gradle.kts}"
 
 declare -a __GNG_CONFIG
 function load_config() {
@@ -65,7 +62,7 @@ function cfg_get() {
   done
 }
 
-__GRADLE_HOME__=$(mktemp -d -t gng)
+__GRADLE_HOME__=$(mktemp -d) || die "Failed to create temporary directory!"
 __EMPTY_GRADLE_BUILD_FILE="${__GRADLE_HOME__}/build.gradle"
 [ -f "${__EMPTY_GRADLE_BUILD_FILE}" ] || {
   touch "${__EMPTY_GRADLE_BUILD_FILE}"
