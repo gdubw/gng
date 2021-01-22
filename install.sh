@@ -122,13 +122,18 @@ readonly FILE_LIST=(
   bin/common.sh
   bin/gng
   bin/gng.cfg
-  gradle/init.gradle
+  gradle/GenerateWrapperProperties.java
+  gradle/gradlew
+  gradle/gradlew.bat
   gradle/wrapper/gradle-wrapper.jar
   gradle/wrapper/gradle-wrapper.properties
 )
 
 install() {
   ensure_root
+  command -v javac >/dev.null || {
+    die "'javac' is not found! Please Install JDK first!"
+  }
 
   local PREFIX="${1:-/opt/gng}"
 
@@ -144,6 +149,7 @@ install() {
 
   ln -sv "${PREFIX}"/bin/gng /usr/local/bin/gng
   ln -sv "${PREFIX}"/bin/gng /usr/local/bin/gw
+  javac "${PREFIX}"/gradle/GenerateWrapperProperties.java
 }
 
 case "${1:-}" in
