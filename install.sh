@@ -121,8 +121,7 @@ check_update() {
 readonly FILE_LIST=(
   bin/common.sh
   bin/gng
-  bin/gng.cfg
-  gradle/GenerateWrapperProperties.java
+  gradle/gng.cfg
   gradle/gradlew
   gradle/gradlew.bat
   gradle/wrapper/gradle-wrapper.jar
@@ -131,10 +130,6 @@ readonly FILE_LIST=(
 
 install() {
   ensure_root
-  command -v javac >/dev.null || {
-    die "'javac' is not found! Please Install JDK first!"
-  }
-
   local PREFIX="${1:-/opt/gng}"
 
   info "Installed gng to $PREFIX"
@@ -149,7 +144,6 @@ install() {
 
   ln -sv "${PREFIX}"/bin/gng /usr/local/bin/gng
   ln -sv "${PREFIX}"/bin/gng /usr/local/bin/gw
-  javac "${PREFIX}"/gradle/GenerateWrapperProperties.java
 }
 
 case "${1:-}" in

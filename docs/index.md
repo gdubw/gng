@@ -8,10 +8,10 @@ link to `gw`.
 # GNG is Not Gradle
 
 GNG is a script that automatically search your `gradlew` when you are inside your Gradle project and execute it. It also
-provides a bootstrap function installing any Gradle wrapper version you prefer If you are creating a new Gradle project.
+contains an official Gradle wrapper. You can create gradle projects from scratch without installing Gradle.
 
 This is originally inspired by [gdub](https://www.gdub.rocks/)
-and [gradlew-bootstrap](https://github.com/viphe/gradlew-bootstrap). I shamelessly steal some code from them.
+and [gradlew-bootstrap](https://github.com/viphe/gradlew-bootstrap).
 
 ## What's the problem?
 
@@ -23,7 +23,7 @@ using Gradle Wrapper comes with a project.** It's more better to not keep a copy
 But keep typing `./gradlew` is cumbersome. It becoms even worse when you have to type `../gradlew`, or `../../gradlew`.
 
 I am a heavy Gradle user, I always need to create a new Gradle project for trying some new ideas, without the globally
-installed gradle , it is not possible installing Gradle Wrapper into a brand new project.
+installed gradle , it is not possible installing Gradle Wrapper into a brand-new project.
 
 You might interest in these discussions.
 >
@@ -36,57 +36,62 @@ You might interest in these discussions.
 
 # Usage
 
-Just type `gng` whenever you need to type `gradle` or `gradlew`, then your life will be easier.
+Just type `gw` whenever you need to type `gradle` or `gradlew`, then your life will be easier.
 
-If you don't have any Gradle or Gradle Wrapper installed, please don't worry. just type `gng --bootstrap`. It will
-create a Gradle wrapper in your current working directory. By default, `gng` installs Gradle wrapper with the latest
-version of Gradle.
+If you don't have any Gradle or Gradle Wrapper installed, please don't worry. just type `gng wrapper`. It will create a
+Gradle wrapper in your current working directory.
 
-The latest version is from https://services.gradle.org/versions/current
+## 'gng' and 'gw'
 
-```text
-gng --bootstrap [version] [distType]
+There are two commands `gw` and `gng`. They both behave exactly like `gradlew`.
 
-version: Gradle version, like 6.5, 4.2.1, ...etc. 'latest' will install the latest gradle distribution
-
-distType: 'all' for Gradle Distribution with source code, 'bin' for binary distribution.
-```
-
-Example: This command will install the latest version with Gradle distribution including source code.
+* `gw` is originally from [gdub](http://gdub.rocks) and shorter than `gng`. It's easy to type and good for daily use.
+* `gng` is the new name, and provides more features than `gw`. For example, `gng wrapper` can generate a copy of Gradle
+  Wrapper for you, type `gng wrapper -h` for details.
 
 ```bash
-gng --bootstrap latest all
+gng wrapper -h
+Generates a Gradle Wrapper
+Usage: gng wrapper [-v|--version <arg>] [-t|--distribution-type <arg>] [-m|--mirror <arg>] [-h|--help] [ -d|--destination-dir <arg>
+	-v, --version: Gradle Version (default: 'latest', version information is from https://services.gradle.org/versions/current, visit https://services.gradle.org/versions/all for all available versions)
+	-t, --distribution-type: Gradle Distribution Type (default: 'all')
+	-m, --mirror: Gradle Distribution Mirror URL Prefix(Optional with no default value, The url prefix replaces https://services.gradle.org/distributions/)
+	              It replaces the whole distributionUrl except the file part in a URL. For example, if specify '-m "https://example.com/gradle/"', then
+	              "https://services.gradle.org/distributions/gradle-6.8-all.zip" will become "https://example.com/gradle/gradle-6.8-all.zip"
+	-d, --destination-dir : Your Gradle project root directory. (default: 'Your current working directory retrieved using ${PWD}')
+	-h, --help: Prints help
+```
+
+Please note that `gng wrapper` OVERRIDES the original command `gradle wrapper` that executes Gradle Wrapper task. If you
+want to execute the Gradle wrapper task instead, please type `gw wrapper`.
+
+Example: The following command will create a directory 'test' and install a copy of Gradle Wrapper with the latest
+version Gradle.
+
+```bash
+gng wrapper -d test
 ```
 
 It will output like this(version number may vary as time goes by):
 
 ```bash
-Running the embedded wrapper ...
-[GNG] Gradle Wrapper 6.5 installed, distributionUrl=https://services.gradle.org/distributions/gradle-6.5-all.zip
+Fetching the latest Gradle version from services.gradle.org
+
+The latest Gradle version is 6.8.1
+
+Installing Gradle Wrapper in test. (version=6.8.1, distributionType=all, mirrorUrl=<Not Specified>)
 ```
 
 ## More examples
 
-1. `gng --bootstrap` will silently upgrade your existing Gradle Wrapper to the latest version
-2. `gng --bootstrap 4.8.1` will silently upgrade your existing Gradle Wrapper to the version 4.8.1
-2. `gng --bootstrap latest all` will silently upgrade your existing Gradle Wrapper to the latest version with Gradle
-   source code archive.
-
-## gwo-agent integration
-
-Create a file at `~/.gradle/gng.cfg`
-
-```shell
-gwo_url=http://your-mirror-site
-```
-
-`gng` will do the following:
-
-1. download gwo-agent to ~/.gradle/gwo-agent.jar and apply GRADLE_OPTS accordingly.
-2. When generate Gradle Wrapper using `gng --bootstrap`, `gng` will replace your mirror site url
-   in `gradle-wrapper.properties`
-
-See https://github.com/ddimtirov/gwo-agent for details.
+1. `gng wrapper` will silently upgrade your existing Gradle Wrapper to the latest version
+2. `gng wrapper -v 4.8.1` will silently set your existing Gradle Wrapper to the version 4.8.1
+3. `gng wrapper -t all` will silently set your existing Gradle Wrapper to the latest version with Gradle source code
+   archive(gradle-xxx-all.zip).
+4. `gng wrapper -v 4.2.1 -m 'http://example.com/gradle/` will set your Gradle version to 4.2.1 and distributionUrl
+   to `http://example.com/gradle/gradle-4.2.1-bin.zip`
+5. `gng wrapper -v 4.2.1 -t all -m 'http://example.com/gradle/` will set your Gradle version to 4.2.1 and
+   distributionUrl to `http://example.com/gradle/gradle-4.2.1-all.zip`
 
 # Installation
 
@@ -133,9 +138,9 @@ examples:
 2. `./install.sh -s` will check for latest updates from remote master
 3. `git reset --hard && git pull` will keep your copy to the latest
 
-# How does GNG install your Gradle Wrapper?
+# How does GNG install Gradle Wrapper?
 
-Internally, it uses an embedded Gradle Wrapper with version 1.0 distribution. The reason use `1.0` is the small
-distribution package size. You can trust the embedded gradle-wrapper.jar. It is verified
+It copies the embedded Gradle Wrapper to your project directly. You can trust the embedded gradle-wrapper.jar. It is
+verified
 by [Gradle Wrapper Validation](https://github.com/marketplace/actions/gradle-wrapper-validation) ![](https://github.com/dantesun/gng/workflows/Validate%20Gradle%20Wrapper/badge.svg)
 .
