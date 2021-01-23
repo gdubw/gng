@@ -114,7 +114,6 @@ readonly FILE_LIST=(
   gradle/gradlew
   gradle/gradlew.bat
   gradle/wrapper/gradle-wrapper.jar
-  gradle/wrapper/gradle-wrapper.properties
 )
 
 install() {

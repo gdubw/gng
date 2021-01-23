@@ -12,12 +12,19 @@ readonly INFO_COLOR='\033[1;96m'
 readonly NO_COLOR='\033[0m' # No Color
 readonly ERROR_COLOR='\033[0;31m'
 
+function debug() {
+  if [[ "${DEBUG}" == 0 ]]; then
+    return
+  fi
+  echo -e "${INFO_COLOR}[DEBUG] $*${NO_COLOR}\n"
+}
+
 function err() {
-  echo -e "${ERROR_COLOR}$*${NO_COLOR}\n" >&2
+  echo -e "${ERROR_COLOR}[ERROR] $*${NO_COLOR}\n" >&2
 }
 
 function info() {
-  echo -e "${INFO_COLOR}$*${NO_COLOR}\n"
+  echo -e "${INFO_COLOR}[INFO] $*${NO_COLOR}\n"
 }
 
 function die() {
@@ -44,7 +51,9 @@ ${trace_info}
 "
   exit $exit_status
 }
-trap '__errorCallBack__' ERR
+if [[ "${DEBUG}" == 1 ]]; then
+  trap '__errorCallBack__' ERR
+fi
 
 trim() {
   # Remove the beginning spaces and tabs

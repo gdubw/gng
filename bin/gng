@@ -109,19 +109,15 @@ select_gradle() {
     echo "${gradlew}"
     return 0
   fi
-
   return 1
 }
 
 gradle() {
   local gradle
   gradle=$(select_gradle "${PWD}") || die "Failed to find gradlew."
-  info "Using gradle at '${gradle}' to run"
+  debug "Using gradle at '${gradle}' to run"
   load_config "$(dirname "${gradle}")"
   (
-    GRADLE_OPTS="${GRADLE_OPTS:-} $(cfg_get GRADLE_OPTS)"
-    export GRADLE_OPTS
-    [[ -z "${GRADLE_OPTS}" ]] || info "GRADLE_OPTS: ${GRADLE_OPTS}"
     # Restore shell options
     eval "${SAVED_OPTS}"
     "${gradle}" "$@"
