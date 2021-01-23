@@ -43,7 +43,7 @@ Gradle wrapper in your current working directory.
 
 ## 'gng' and 'gw'
 
-There are two commands `gw` and `gng`. They both behave exactly like `gradlew`.
+There are two commands `gw` and `gng`. `gw` is for your daily use and `gng` provides extra functions.
 
 * `gw` is originally from [gdub](http://gdub.rocks) and shorter than `gng`. It's easy to type and good for daily use.
 * `gng` is the new name, and provides more features than `gw`. For example, `gng wrapper` can generate a copy of Gradle
@@ -88,9 +88,9 @@ Installing Gradle Wrapper in test. (version=6.8.1, distributionType=all, mirrorU
 2. `gng wrapper -v 4.8.1` will silently set your existing Gradle Wrapper to the version 4.8.1
 3. `gng wrapper -t all` will silently set your existing Gradle Wrapper to the latest version with Gradle source code
    archive(gradle-xxx-all.zip).
-4. `gng wrapper -v 4.2.1 -m 'http://example.com/gradle/` will set your Gradle version to 4.2.1 and distributionUrl
+4. `gng wrapper -v 4.2.1 -m 'http://example.com/gradle/` will set your Gradle's version to 4.2.1 and distributionUrl
    to `http://example.com/gradle/gradle-4.2.1-bin.zip`
-5. `gng wrapper -v 4.2.1 -t all -m 'http://example.com/gradle/` will set your Gradle version to 4.2.1 and
+5. `gng wrapper -v 4.2.1 -t all -m 'http://example.com/gradle/` will set your Gradle's version to 4.2.1 and
    distributionUrl to `http://example.com/gradle/gradle-4.2.1-all.zip`
 
 # Installation
