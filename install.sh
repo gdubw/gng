@@ -16,6 +16,8 @@ source "${SELF_DIR}/bin/common.sh" || {
   exit 1
 }
 
+cd "${SELF_DIR}" || die "Failed to change to ${SELF_DIR}"
+
 ensure_root() {
   if ! [[ "0" == "$(id -u)" ]]; then
     die "Please run as 'root', type '$0 -h' for details."
@@ -47,54 +49,41 @@ Install gng from git source tree. See http://github.com/gdubw/gng for details.
 }
 
 function git_get_upstream() {
-  local dir="${1}"
-  (
-    cd "${dir}" || die "Failed to change directory to ${dir}"
-    git rev-parse --abbrev-ref '@{upstream}'
-  )
+  git rev-parse --abbrev-ref '@{upstream}'
 }
 
 function git_validate() {
-  local dir="${1}"
-  (
-    cd "${dir}" || die "Failed to change directory to ${dir}"
-    git rev-parse --git-dir &>/dev/null || {
-      die "${dir} is not a GIT repository！"
-    }
-    git_is_dirty "${dir}" && {
-      die "${dir} is dirty!"
-    }
+  local dir="${PWD}"
+  git rev-parse --git-dir &>/dev/null || {
+    die "${dir} is not a GIT repository！"
+  }
+  git_is_dirty && {
+    die "${dir} is dirty!"
+  }
 
-    git fetch &>/dev/null || {
-      die "git fetch failed!"
-    }
-    local upstream
-    upstream=$(git_get_upstream "${dir}")
-    if (($(git rev-list "${upstream}"..HEAD --count) > 0)); then
-      die "${dir} is locally changed. Please try again after 'git push'"
-    fi
-    if (($(git rev-list "HEAD..${upstream}" --count) > 0)); then
-      die "${dir} is not synced with remote. Please try again after 'git pull'"
-    fi
-  )
+  git fetch &>/dev/null || {
+    die "git fetch failed!"
+  }
+  local upstream
+  upstream=$(git_get_upstream "${dir}")
+  if (($(git rev-list "${upstream}"..HEAD --count) > 0)); then
+    die "${dir} is locally changed. Please try again after 'git push'"
+  fi
+  if (($(git rev-list "HEAD..${upstream}" --count) > 0)); then
+    die "${dir} is not synced with remote. Please try again after 'git pull'"
+  fi
 }
 
 function git_is_dirty() {
-  local dir="${1}"
-  (
-    cd "${dir}" || die "Can't change to directory ${dir}"
-    if [ -z "$(git status --porcelain)" ]; then
-      return 1
-    else
-      return 0
-    fi
-  )
+  if [ -z "$(git status --porcelain)" ]; then
+    return 1
+  else
+    return 0
+  fi
 }
 
 check_update() {
-  git_is_dirty || {
-    die 'You have modified/untracked files, aborting...'
-  }
+  git_validate
   local branch
   branch=$(git rev-parse --abbrev-ref HEAD)
   if [[ "$branch" != "master" ]]; then
