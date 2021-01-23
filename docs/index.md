@@ -124,7 +124,7 @@ source ~/.bashrc
 ```bash
 sudo ./install.sh [-fhsu]
 
-Install gng from git source tree. See http://github.com/dantesun/gng for details.
+Install gng from git source tree. See http://github.com/gdubw/gng for details.
 
 -u uninstall
 -f re-install
