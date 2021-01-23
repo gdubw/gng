@@ -18,7 +18,7 @@ and [gradlew-bootstrap](https://github.com/viphe/gradlew-bootstrap).
 I worked with a lot of gradle projects, every project has its own Gradle Wrapper. So the global installed one, normally
 installed with `brew install gradle`, is seldom used. In fact, the global installed gradle’s version may conflict with
 the project you are working on and some weird and unexpected building failures may happen. **The best practice is always
-using Gradle Wrapper comes with a project.** It's more better to not keep a copy of global available gradle.
+using Gradle Wrapper comes with a project.** It's better to not keep a copy of global available gradle.
 
 But keep typing `./gradlew` is cumbersome. It becoms even worse when you have to type `../gradlew`, or `../../gradlew`.
 
