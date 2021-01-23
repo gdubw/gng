@@ -1,4 +1,4 @@
-![](https://github.com/dantesun/gng/workflows/Validate%20Gradle%20Wrapper/badge.svg)
+![](https://github.com/dantesun/gng/workflows/Validate%20Gradle%20Wrapper/badge.svg) [![Gitter](https://badges.gitter.im/gdubw/community.svg)](https://gitter.im/gdubw/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 # GNG is merging with gdub
 
