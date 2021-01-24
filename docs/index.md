@@ -2,8 +2,8 @@
 
 # GNG is merging with gdub
 
-I am working on merge gng and gdub together after talked with the author of `gdub`. `gng` will still be kept as a symbol
-link to `gw`.
+I am working on merge gng and gdub together after talked with the author of `gdub`. `gw` will be kept as a symbol
+link to `gng`.
 
 # GNG is Not Gradle
 
@@ -114,7 +114,7 @@ To avoid using any system wide Gradle distribution add a `gradle` alias to `gw` 
 Example *bash*:
 
 ```text
-echo "alias gradle=gng" >> ~/.bashrc
+echo "alias gradle=gw" >> ~/.bashrc
 echo "export PATH=/usr/local/bin:${PATH}" >> ~/.bashrc
 source ~/.bashrc
 ```
