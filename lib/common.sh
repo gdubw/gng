@@ -16,15 +16,15 @@ function debug() {
   if [[ "${DEBUG}" == 0 ]]; then
     return
   fi
-  echo -e "${INFO_COLOR}[DEBUG] $*${NO_COLOR}\n"
+  echo -e "${INFO_COLOR}$*${NO_COLOR}\n"
 }
 
 function err() {
-  echo -e "${ERROR_COLOR}[ERROR] $*${NO_COLOR}\n" >&2
+  echo -e "${ERROR_COLOR}$*${NO_COLOR}\n" >&2
 }
 
 function info() {
-  echo -e "${INFO_COLOR}[INFO] $*${NO_COLOR}\n"
+  echo -e "${INFO_COLOR} $*${NO_COLOR}\n"
 }
 
 function die() {

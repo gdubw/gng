@@ -11,7 +11,7 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
 done
 SELF_DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
 # shellcheck disable=SC1090
-source "${SELF_DIR}/bin/common.sh" || {
+source "${SELF_DIR}/lib/common.sh" || {
   echo "Failed to load common.sh in ${SELF_DIR}"
   exit 1
 }

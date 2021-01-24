@@ -17,7 +17,7 @@ SELF_DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
 readonly SELF_DIR
 
 # shellcheck disable=SC1090
-source "${SELF_DIR}/common.sh" || {
+source "${SELF_DIR}/../lib/common.sh" || {
   echo "Failed to load common.sh in ${SELF_DIR}"
   exit 1
 }
