@@ -29,7 +29,11 @@ function info() {
 
 function die() {
   local exit_status=$?
-  err "$@" "($(caller))"
+  if [[ "${DEBUG}" == 0 ]]; then
+    err "$@"
+  else
+    err "$@" "($(caller))"
+  fi
   if [ "$exit_status" = "0" ]; then
     exit 1
   else
