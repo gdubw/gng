@@ -1,1 +1,1 @@
-The official Gradle Wrapper 1.0 Distribution. Used internally by GNG.
+The official Gradle Wrapper Distribution. Used internally by GNG.
