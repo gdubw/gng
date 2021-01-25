@@ -108,7 +108,7 @@ check_update() {
 }
 
 readonly FILE_LIST=(
-  bin/common.sh
+  lib/common.sh
   bin/gng
   gradle/gng.cfg
   gradle/gradlew
