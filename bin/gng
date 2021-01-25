@@ -25,16 +25,18 @@ source "${SELF_DIR}/../lib/common.sh" || {
 readonly GRADLEW="${GRADLEW:-gradlew}"
 
 declare -a __GNG_CONFIG
+#NOTE: don't invoke this function in subshell
 function load_config() {
+  #If __GNG_CONFIG is readonly(unset will fail if it is not.), means we already load the cfg_file into this array
+  if ! (unset __GNG_CONFIG 2>/dev/null); then
+    return 0
+  fi
   local curr_path="${1}"
   local cfg_file="${curr_path}/gradle/gng.cfg"
   [ -f "${cfg_file}" ] && {
-    #If __GNG_CONFIG is readonly(unset will fail if it is not.), means we already load the cfg_file into this array
-    if (unset __GNG_CONFIG 2>/dev/null); then
-      IFS=$'\n' read -r -d $'\0' -a __GNG_CONFIG < <(__load_cfg <"${cfg_file}" && printf '\0')
-      readonly __GNG_CONFIG
-    fi
+    IFS=$'\n' read -r -d $'\0' -a __GNG_CONFIG < <(__load_cfg <"${cfg_file}" && printf '\0')
   }
+  readonly __GNG_CONFIG
 }
 
 lookup() {
@@ -57,7 +59,7 @@ function cfg_get() {
   local key="${1}"
   for kv in "${__GNG_CONFIG[@]}"; do
     if [[ ${kv} =~ ^${key}= ]]; then
-      printf "%s" "${kv#${key}=}"
+      trim "${kv#${key}=}"
     fi
   done
 }
@@ -120,7 +122,9 @@ gradle() {
   (
     # Restore shell options
     eval "${SAVED_OPTS}"
-    "${gradle}" "$@"
+    GRADLE_OPTS=$(cfg_get GRADLE_OPTS)
+    export GRADLE_OPTS
+    exec "${gradle}" "$@"
   )
 }
 
