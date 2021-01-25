@@ -10,5 +10,5 @@ jobs:
       - name: Package
         uses: bpicode/github-action-fpm@master
         with:
-          fpm_args: './build'
-          fpm_opts: '--debug -n mypackage -t deb -s dir'
+          fpm_args: './bin ./gradle ./lib'
+          fpm_opts: '--debug -n gng -t deb -s dir'
