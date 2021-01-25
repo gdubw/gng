@@ -1,0 +1,14 @@
+name: GNG packaging
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Package
+        uses: bpicode/github-action-fpm@master
+        with:
+          fpm_args: './build'
+          fpm_opts: '--debug -n mypackage -t deb -s dir'
