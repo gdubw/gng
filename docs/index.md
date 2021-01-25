@@ -1,9 +1,8 @@
 ![](https://github.com/dantesun/gng/workflows/Validate%20Gradle%20Wrapper/badge.svg) [![Gitter](https://badges.gitter.im/gdubw/community.svg)](https://gitter.im/gdubw/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-# GNG is merging with gdub
+GNG is the successor of [gdub](https://www.gdub.rocks). It keeps the original `gw` command and with more features.
 
-I am working on merge gng and gdub together after talked with the author of `gdub`. `gw` will be kept as a symbol
-link to `gng`.
+It is written totally in bash script.
 
 # GNG is Not Gradle
 
@@ -95,9 +94,12 @@ Installing Gradle Wrapper in test. (version=6.8.1, distributionType=all, mirrorU
 
 # Installation
 
-## Homebrew (TODO)
+## Homebrew
 
-I am still working on it ...
+```bash
+brew tap gdubw/gng
+brew install gng
+```
 
 ## Installing from source
 
