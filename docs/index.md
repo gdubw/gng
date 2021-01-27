@@ -17,7 +17,7 @@ brew install gng
 ## Self-Extracting Installer
 
 The self-extracting installer is created with [makeself](https://github.com/megastep/makeself). If you are interested in
-the packaging details , Please see [release.yml](../.github/workflows/release.yml).
+the packaging details , Please see [release.yml](https://github.com/gdubw/gng/blob/master/.github/workflows/release.yml).
 
 ```shell
  # Downloading the latest release
