@@ -27,7 +27,7 @@ the packaging details , Please see [release.yml](../.github/workflows/release.ym
 
 After Installation is complete:
 
-````shell
+```shell
 # Creates a new Gradle project with Gradle wrapper
 gng wrapper -d example-project
 cd example-project
