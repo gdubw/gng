@@ -1,0 +1,16 @@
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-deb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          curl -fsSL https://github.com/megastep/makeself/releases/download/release-2.4.3/makeself-2.4.3.run -o makeself.run
+          bash makeself.run -t makeself
+          mkdir tmp
+          cp -r install.sh bin gradle lib ./tmp
+          ./makeself/makeself.sh --notemp --needroot ./tmp gng.sh "GNG is Not Gradle" ./install.sh
