@@ -14,3 +14,4 @@ jobs:
           mkdir tmp
           cp -r install.sh bin gradle lib ./tmp
           ./makeself/makeself.sh --notemp --needroot ./tmp gng.sh "GNG is Not Gradle" ./install.sh
+          ./gng.sh
