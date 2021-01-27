@@ -1,14 +1,20 @@
-name: GNG packaging
-
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
-  build:
+  build-deb:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - name: Package
-        uses: bpicode/github-action-fpm@master
+      - uses: actions/checkout@v2
+
+      - uses: singingwolfboy/build-dpkg-buster@v1
+        id: build
         with:
-          fpm_args: './bin ./gradle ./lib'
-          fpm_opts: '--debug -n gng -t deb -s dir'
+          args: --unsigned-source --unsigned-changes
+
+      - uses: actions/upload-artifact@v1
+        with:
+          name: ${{ steps.build.outputs.filename }}
+          path: ${{ steps.build.outputs.filename }}
