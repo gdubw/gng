@@ -5,19 +5,38 @@ GNG is the successor of [gdub](https://www.gdub.rocks). It keeps the original `g
 It is written totally in bash script.
 
 # Quick Start
+
+## Homebrew
+
 ```shell
 #Install gng
 brew tap gdubw/gng
 brew install gng
+```
+
+## Self-Extracting Installer
+
+```shell
+ # Downloading the latest release
+ curl -fsSL https://github.com/gdubw/gng/releases/latest/download/gng-installer.sh -o gng-installer.sh
+ sudo bash ./gng-installer.sh
+```
+
+After Installation:
+``shell
+
 # Creates a new Gradle project
-mkdir example-project
-cd example-project
+
+mkdir example-project cd example-project
+
 # Generates Gradle Wrapper
+
 gng wrapper
 
 # From now on, always type `gw` whenever you need to type `gradlew`
+
 gw int
-```
+``
 
 # GNG is Not Gradle
 
