@@ -12,15 +12,13 @@ jobs:
       - name: Get Version
         id: get_version
         uses: battila7/get-version-action@v2
-        env:
-          GNG_PACKAGE: gng-${{ steps.get_version.outputs.version-without-v }}.sh
       - name: Build package
         run: |
           curl -fsSL https://github.com/megastep/makeself/releases/download/release-2.4.3/makeself-2.4.3.run -o makeself.run
           bash makeself.run --target makeself
           mkdir tmp
           cp -r install.sh bin gradle lib ./tmp
-          ./makeself/makeself.sh --notemp --needroot ./tmp ${{ GNG_PACKAGE }}.sh "GNG is Not Gradle" ./install.sh
+          ./makeself/makeself.sh --notemp --needroot ./tmp gng-${{ steps.get_version.outputs.version-without-v }}.sh "GNG is Not Gradle" ./install.sh
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -38,6 +36,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
-          asset_path: ./${{ GNG_PACKAGE }}
-          asset_name: ${{ GNG_PACKAGE }}
+          asset_path: ./gng-${{ steps.get_version.outputs.version-without-v }}.sh
+          asset_name: gng-${{ steps.get_version.outputs.version-without-v }}.sh
           asset_content_type: application/x-makeself .run
