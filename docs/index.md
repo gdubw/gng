@@ -16,27 +16,24 @@ brew install gng
 
 ## Self-Extracting Installer
 
+The self-extracting installer is created with [makeself](https://github.com/megastep/makeself). If you are interested in
+the packaging details , Please see [release.yml](../.github/workflows/release.yml).
+
 ```shell
  # Downloading the latest release
  curl -fsSL https://github.com/gdubw/gng/releases/latest/download/gng-installer.sh -o gng-installer.sh
  sudo bash ./gng-installer.sh
 ```
 
-After Installation:
-``shell
+After Installation is complete:
 
-# Creates a new Gradle project
-
-mkdir example-project cd example-project
-
-# Generates Gradle Wrapper
-
-gng wrapper
-
+````shell
+# Creates a new Gradle project with Gradle wrapper
+gng wrapper -d example-project
+cd example-project
 # From now on, always type `gw` whenever you need to type `gradlew`
-
-gw int
-``
+gw
+```
 
 # GNG is Not Gradle
 
