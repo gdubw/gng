@@ -15,4 +15,5 @@ jobs:
           cp -r install.sh bin gradle lib ./tmp
           ./makeself/makeself.sh --notemp --needroot ./tmp gng.sh "GNG is Not Gradle" ./install.sh
           sudo ./gng.sh
+          ls -l /usr/local/bin/gng
           /usr/local/bin/gng wrapper -h
