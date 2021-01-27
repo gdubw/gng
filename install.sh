@@ -17,7 +17,7 @@ source "${SELF_DIR}/lib/common.sh" || {
 }
 
 if command -v brew >/dev/null; then
-  command -v brew list gng >/dev/null && die "GNG is already installed with Homebrew!"
+  brew list gng &>/dev/null && die "GNG is already installed with Homebrew!"
 fi
 
 cd "${SELF_DIR}" || die "Failed to change to ${SELF_DIR}"
