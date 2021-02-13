@@ -135,7 +135,7 @@ install() {
   chmod 755 "${PREFIX}/bin/gng"
 
   [ -e /usr/local/bin/gng ] || ln -sv "${PREFIX}"/bin/gng /usr/local/bin/gng
-  [ -e /usr/local/bin/gng ] || ln -sv "${PREFIX}"/bin/gng /usr/local/bin/gw
+  [ -e /usr/local/bin/gw ] || ln -sv "${PREFIX}"/bin/gng /usr/local/bin/gw
 }
 
 case "${1:-}" in
