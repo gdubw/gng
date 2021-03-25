@@ -122,7 +122,7 @@ gradle() {
   (
     # Restore shell options
     eval "${SAVED_OPTS}"
-    GRADLE_OPTS=$(cfg_get GRADLE_OPTS)
+    GRADLE_OPTS="$(cfg_get GRADLE_OPTS) ${GRADLE_OPTS:-}"
     export GRADLE_OPTS
     exec "${gradle}" "$@"
   )
