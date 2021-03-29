@@ -188,9 +188,22 @@ function bootstrap() {
   __install_gw "${_arg_version}" "${_arg_distribution_type}" "${_arg_mirror:-}" "${_arg_destination_dir}"
 }
 
+function trust() {
+  local HOST="${1}"
+  local PORT="${2:-443}"
+  local KEYSTORE_FILE
+  KEYSTORE_FILE="$(readlink -e "$(dirname "$(readlink -e "$(which keytool)")")")"/../lib/security/cacerts
+  local KEYSTORE_PASS="${KEYSTORE_PASS:-changeit}"
+  keytool -printcert -sslserver "${HOST}:${PORT}" -rfc | keytool -import -noprompt -alias "${HOST}" -keystore "${KEYSTORE_FILE}" -storepass "${KEYSTORE_PASS}"
+}
+
 readonly SCRIPT_NAME="$(basename "$0")"
 if [ "gng" = "${SCRIPT_NAME}" ]; then
   case "${1:-}" in
+  trust)
+    shift
+    trust "$@"
+    ;;
   wrapper)
     shift
     bootstrap "$@"
