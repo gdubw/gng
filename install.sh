@@ -123,6 +123,7 @@ readonly FILE_LIST=(
 install() {
   ensure_root
   local PREFIX="${1:-/opt/gng}"
+  umask 022
 
   info "Installed gng to $PREFIX"
   for file in ${FILE_LIST[*]}; do
