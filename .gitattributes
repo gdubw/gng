@@ -11,6 +11,7 @@ gradlew.bat text eol=crlf
 gradlew text eol=cr
 *.sh text=cr
 gng text=cr
+install.sh text=cr
 
 # Denote all files that are truly binary and should not be modified.
 *.png binary
