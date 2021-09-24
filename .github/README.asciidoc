@@ -1,0 +1,6 @@
+
+## GNG
+
+- link:../docs/index-bash.asciidoc[GNG for Bash]
+
+- link:../docs/index-powershell.asciidoc[GNG for PowerShell]
