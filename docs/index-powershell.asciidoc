@@ -1,6 +1,6 @@
 image:https://github.com/dantesun/gng/workflows/Validate%20Gradle%20Wrapper/badge.svg[]
 image:https://badges.gitter.im/gdubw/community.svg[Gitter]
-link:https://gitter.im/gdubw/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge[]
+//link:https://gitter.im/gdubw/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge[]
 
 GNG is the successor of [gdub](https://www.gdub.rocks). It keeps the original `gw` command and with more features.
 
