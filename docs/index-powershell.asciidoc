@@ -18,7 +18,7 @@ The PowerShell version of GNG is implemented as a PowerShell Module.
 ----
 git clone https://github.com/babeloff/gng.git
 cd gng
-./bin/install.ps1
+./bin/install-gng-powershell.ps1
 ----
 
 After the Gradle Module has been installed into it can be used to initialize a gradle project.
