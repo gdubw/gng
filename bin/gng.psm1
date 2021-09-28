@@ -89,7 +89,7 @@ Specifies which type of console output to generate. default: 'auto'.
               Mandatory=$false,
               HelpMessage="Log errors only.")]
       [switch]
-      $GradleError  = $true,
+      $GradleQuiet  = $false,
 
       [Parameter(
               Mandatory=$false,
@@ -120,14 +120,14 @@ Specifies which type of console output to generate. default: 'auto'.
       [Parameter(
               Mandatory=$false,
               HelpMessage="Specify an initialization script.")]
-      [switch]
-      $InitScript = $false,
+      [string]
+      $InitScript,
 
       [Parameter(
           Mandatory=$false,
           HelpMessage="Include the specified build in the composite.")]
-      [switch]
-      $IncludeBuild  = $false,
+      [string]
+      $IncludeBuild,
 
       [Parameter(
           Mandatory=$false,
@@ -343,11 +343,44 @@ Enables watching the file system for changes, allowing data about the file syste
   } else {
       ConvertFrom-Json ''
   }
+  $argList = $Task
+  if ($NoRebuild) { $argList += '--no-rebuild' }
+  if ($BuildCache) { $argList += '--build-cache' }
+  if ($Continue) { $argList += '--continue' }
+  if ($GradleDebug) { $argList += '--debug' }
+  if ($GradleWarn) { $argList += '--warn' }
+  if ($GradleInfo) { $argList += '--info' }
+  if ($GradleQuiet) { $argList += '--quiet' }
+  if ($Daemon) { $argList += '--daemon' }
+  if ($Foreground) { $argList += '--foreground' }
+  if ($WriteVerificationMetadata) { $argList += '--write-verification-metadata' }
+  if ($DryRun) { $argList += '--dry-run' }
+  if ($NoBuildCache) { $argList += '--no-build-cache' }
+  if ($NoDaemon) { $argList += '--no-daemon' }
+  if ($NoParallel) { $argList += '--no-parallel' }
+  if ($NoScan) { $argList += '--no-scan' }
+  if ($NoWatchFs) { $argList += '--no-watch-fs' }
+  if ($Offline) { $argList += '--offline' }
+  if ($Parallel) { $argList += '--parallel' }
+  if ($Profile) { $argList += '--profile' }
+  if ($RefreshDependencies) { $argList += '--refresh-dependencies' }
+  if ($RefreshKeys) { $argList += '--refresh-keys' }
+  if ($RerunTasks) { $argList += '--rerun-tasks' }
+  if ($FullStacktrace) { $argList += '--full-stacktrace' }
+  if ($Stacktrace) { $argList += '--stacktrace' }
+  if ($Scan) { $argList += '--scan' }
+  if ($Status) { $argList += '--status' }
+  if ($Stop) { $argList += '--stop' }
+  if ($Continuous) { $argList += '--continuous' }
+  if ($Version) { $argList += '--version' }
+  if ($Watch) { $argList += '--watch-fs' }
+  if ($WriteLocks) { $argList += '--write-locks' }
+
   Write-Debug "gradlew configuration '${jsonConf}'"
   $procOptions = @{
     FilePath = $gradlewPath
     WorkingDirectory = $gradlewDir
-    ArgumentList = $Task
+    ArgumentList = $argList
     Wait = $True
     PassThru = $True
     NoNewWindow = $True
