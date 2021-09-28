@@ -7,7 +7,13 @@
 $script:psprovidername = "Microsoft-Windows-PowerShell"
 $script:gradlewFileName = "gradlew.bat"
 
-# Search recursively upwards for the file.
+<#
+This is the primary GNG function.
+It performs an upward search for the gradlew.bat file and runs that.
+It is mostly just a wrapper for gradlew but it adds a few parameters.
+It does not include the incubating or deprecated paramters.
+It allows for either the current directory or the gradlew.bat directory.
+ #>
 function Invoke-Gradle {
   param(
       [Parameter(
@@ -38,12 +44,6 @@ The working directory, defaults to current directory.
               HelpMessage="Enables the Gradle build cache. Gradle will try to reuse outputs from previous builds.")]
       [switch]
       $buildCache = $false,
-
-      [Parameter(
-              Mandatory=$false,
-              HelpMessage="Do not rebuild project dependencies.")]
-      [switch]
-      $noRebuild = $false,
 
       [Parameter(
               Mandatory=$false,
@@ -348,6 +348,11 @@ Enables watching the file system for changes, allowing data about the file syste
   Start-Process @procOptions
 }
 
+<#
+The wrapper does not make use of the gradle wrapper task.
+Instead it replicates the behavior of that script.
+This is because GNG has some configuration properties to install in the project as well.
+ #>
 function Install-GradleWrapper {
     Param(
         [Parameter(
