@@ -23,7 +23,7 @@ The gradle task to run preceed it with a ':'.
 By default runs the ':tasks' task.
 "@)]
       [string[]]
-      $Task = ':tasks',
+      $Tasks = ':tasks',
 
       [Parameter(
               Mandatory=$false,
@@ -64,8 +64,8 @@ Specifies which type of console output to generate. default: 'auto'.
       [Parameter(
               Mandatory=$false,
               HelpMessage="Set system property of the JVM (e.g. -Dmyprop=myvalue).")]
-      [string[]]
-      $SystemProp = $false,
+      [string]
+      $SystemProp,
 
       [Parameter(
               Mandatory=$false,
@@ -115,7 +115,7 @@ Specifies which type of console output to generate. default: 'auto'.
               Mandatory=$false,
               HelpMessage="Specifies the gradle user home directory.")]
       [string]
-      $gradleUserHome = $false,
+      $GradleUserHome,
 
       [Parameter(
               Mandatory=$false,
@@ -192,7 +192,7 @@ For more information about build scans, please visit https://gradle.com/build-sc
       [Parameter(
           Mandatory=$false,
           HelpMessage="Set project property for the build script (e.g. -Pmyprop=myvalue).")]
-      [string[]]
+      [string]
       $ProjectProp  = "",
     
       [Parameter(
@@ -311,11 +311,12 @@ Enables watching the file system for changes, allowing data about the file syste
       [switch]
       $WriteLocks  = $false,
 
+      [Alias('x')]
       [Parameter(
               Mandatory=$false,
               HelpMessage="Specify a task to be excluded from execution.")]
       [string[]]
-      $ExcludeTask  = ""
+      $ExcludeTask
   )
 
   Write-Debug "select $gradlewFileName starting in $WorkingDir"
@@ -343,7 +344,8 @@ Enables watching the file system for changes, allowing data about the file syste
   } else {
       ConvertFrom-Json ''
   }
-  $argList = $Task
+  $argList = @()
+
   if ($NoRebuild) { $argList += '--no-rebuild' }
   if ($BuildCache) { $argList += '--build-cache' }
   if ($Continue) { $argList += '--continue' }
@@ -376,6 +378,25 @@ Enables watching the file system for changes, allowing data about the file syste
   if ($Watch) { $argList += '--watch-fs' }
   if ($WriteLocks) { $argList += '--write-locks' }
 
+  if ($SystemProp.Length -gt 0) { $argList += @('--system-prop', $SystemProp) }
+  if ($ProjectProp.Length -gt 0) { $argList += @('--project-prop', $ProjectProp) }
+  if ($GradleUserHome.Length -gt 0) { $argList += @('--gradle-user-home', $GradleUserHome) }
+  if ($ProjectDir.Length -gt 0) { $argList += @('--project-dir', $ProjectDir) }
+  if ($ProjectCacheDir.Length -gt 0) { $argList += @('--project-cache-dir', $ProjectCacheDir) }
+
+  if ($Console -ne 'auto') { $argList += @('--console', $Console) }
+  if ($DependencyVerification -ne 'off') { $argList += @('--dependency-verification', $DependencyVerification) }
+  if ($Priority -ne 'normal') { $argList += @('--priority', $Priority) }
+  if ($WarningMode -ne 'summary') { $argList += @('--warning-mode', $WarningMode) }
+
+  $argList += @('--max-workers', $MaxWorkers)
+
+  Foreach ($xtask in $ExcludeTask) {
+      $argList += @('--exclude-task') + $xtask
+  }
+  
+  $argList += $Tasks
+  Write-Debug "gradlew argument list '${argList}'"
   Write-Debug "gradlew configuration '${jsonConf}'"
   $procOptions = @{
     FilePath = $gradlewPath
@@ -386,7 +407,7 @@ Enables watching the file system for changes, allowing data about the file syste
     NoNewWindow = $True
   }
   [string[]] $procOptionString = $procOptions.GetEnumerator().ForEach({ "$($_.Name)=$($_.Value)" })
-  Write-Debug "gradlew command '$procOptionString'"
+  Write-Debug "start-process '$procOptionString'"
   Start-Process @procOptions
 }
 
