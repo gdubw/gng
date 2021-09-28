@@ -23,7 +23,7 @@ The gradle task to run preceed it with a ':'.
 By default runs the ':tasks' task.
 "@)]
       [string[]]
-      $task = ':tasks',
+      $Task = ':tasks',
 
       [Parameter(
               Mandatory=$false,
@@ -31,61 +31,85 @@ By default runs the ':tasks' task.
 The working directory, defaults to current directory.
 "@)]
       [string]
-      $workingDir = (Get-Location),
+      $WorkingDir = (Get-Location),
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Do not rebuild project dependencies.")]
       [switch]
-      $noRebuild = $false,
+      $NoRebuild = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Enables the Gradle build cache. Gradle will try to reuse outputs from previous builds.")]
       [switch]
-      $buildCache = $false,
+      $BuildCache = $false,
 
       [Parameter(
               Mandatory=$false,
-              HelpMessage="Specifies which type of console output to generate. Values are 'plain', 'auto' (default), 'rich' or 'verbose'.")]
+              HelpMessage=@"
+Specifies which type of console output to generate. default: 'auto'.
+"@)]
+      [ValidateNotNullOrEmpty()]
+      [ValidateSet('plain','auto','rich','verbose')]
       [string]
-      $console = "auto",
+      $Console = "auto",
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Continue task execution after a task failure.")]
       [switch]
-      $continue = $false,
+      $Continue = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Set system property of the JVM (e.g. -Dmyprop=myvalue).")]
       [string[]]
-      $systemProp = $false,
+      $SystemProp = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Log in debug mode (includes normal stacktrace).")]
       [switch]
-      $debug = $false,
+      $GradleDebug = $false,
+
+      [Parameter(
+              Mandatory=$false,
+              HelpMessage="Set log level to warn.")]
+      [switch]
+      $GradleWarn  = $false,
+
+      [Parameter(
+              Mandatory=$false,
+              HelpMessage="Set log level to info.")]
+      [switch]
+      $GradleInfo = $false,
+
+      [Parameter(
+              Mandatory=$false,
+              HelpMessage="Log errors only.")]
+      [switch]
+      $GradleError  = $true,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Uses the Gradle Daemon to run the build. Starts the Daemon if not running.")]
       [switch]
-      $daemon = $false,
+      $Daemon = $false,
 
       [Parameter(
               Mandatory=$false,
-              HelpMessage="Configures the dependency verification mode (strict, lenient or off)")]
+              HelpMessage="Configures the dependency verification mode, default: 'off'")]
+      [ValidateNotNullOrEmpty()]
+      [ValidateSet('strict','lenient','off')]
       [string]
-      $dependencyVerification = $false,
+      $DependencyVerification = 'off',
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Starts the Gradle Daemon in the foreground.")]
       [switch]
-      $foreground = $false,
+      $Foreground = $false,
 
       [Parameter(
               Mandatory=$false,
@@ -97,43 +121,37 @@ The working directory, defaults to current directory.
               Mandatory=$false,
               HelpMessage="Specify an initialization script.")]
       [switch]
-      $initScript = $false,
-
-      [Parameter(
-              Mandatory=$false,
-              HelpMessage="Set log level to info.")]
-      [switch]
-      $info = $false,
+      $InitScript = $false,
 
       [Parameter(
           Mandatory=$false,
           HelpMessage="Include the specified build in the composite.")]
       [switch]
-      $includeBuild  = $false,
+      $IncludeBuild  = $false,
 
       [Parameter(
           Mandatory=$false,
           HelpMessage="Generates checksums for dependencies used in the project (comma-separated list).")]
       [switch]
-      $writeVerificationMetadata  = $false,
+      $WriteVerificationMetadata  = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Run the builds with all task actions disabled.")]
       [switch]
-      $dryRun  = $false,
+      $DryRun  = $false,
 
       [Parameter(
           Mandatory=$false,
           HelpMessage="Configure the number of concurrent workers Gradle is allowed to use.")]
       [Int32]
-      $maxWorkers  = 3,
+      $MaxWorkers  = 3,
     
       [Parameter(
           Mandatory=$false,
           HelpMessage="Disables the Gradle build cache.")]
       [switch]
-      $noBuildCache  = $false,
+      $NoBuildCache  = $false,
     
       [Parameter(
           Mandatory=$false,
@@ -142,13 +160,13 @@ Do not use the Gradle daemon to run the build.
 Useful occasionally if you have configured Gradle to always run with the daemon by default.
 "@)]
       [switch]
-      $noDaemon  = $false,
+      $NoDaemon  = $false,
     
       [Parameter(
           Mandatory=$false,
           HelpMessage="Disables parallel execution to build projects.")]
       [switch]
-      $noParallel  = $false,
+      $NoParallel  = $false,
     
       [Parameter(
           Mandatory=$false,
@@ -157,136 +175,127 @@ Disables the creation of a build scan.
 For more information about build scans, please visit https://gradle.com/build-scans.
 "@)]
       [switch]
-      $noScan  = $false,
+      $NoScan  = $false,
     
       [Parameter(
           Mandatory=$false,
           HelpMessage="Disables watching the file system.")]
       [switch]
-      $noWatchFs  = $false,
+      $NoWatchFs  = $false,
     
       [Parameter(
           Mandatory=$false,
           HelpMessage="Execute the build without accessing network resources.")]
       [switch]
-      $offline  = $false,
+      $Offline  = $false,
     
       [Parameter(
           Mandatory=$false,
           HelpMessage="Set project property for the build script (e.g. -Pmyprop=myvalue).")]
       [string[]]
-      $projectProp  = "",
+      $ProjectProp  = "",
     
       [Parameter(
           Mandatory=$false,
           HelpMessage="Specifies the start directory for Gradle. Defaults to current directory.")]
       [string]
-      $projectDir  = (Get-Location),
+      $ProjectDir  = (Get-Location),
     
       [Parameter(
           Mandatory=$false,
           HelpMessage="Build projects in parallel. Gradle will attempt to determine the optimal number of executor threads to use.")]
       [switch]
-      $parallel  = $false,
+      $Parallel  = $false,
     
       [Parameter(
           Mandatory=$false,
           HelpMessage=@"
-Specifies the scheduling priority for the Gradle daemon and all processes launched by it.
-Values are 'normal' (default) or 'low'
+Specifies the scheduling priority for the Gradle daemon and all processes launched by it. default: 'normal'
 "@)]
-      [switch]
-      $priority  = "normal",
+      [ValidateNotNullOrEmpty()]
+      [ValidateSet('normal','low')]
+      [string]
+      $Priority  = "normal",
     
       [Parameter(
           Mandatory=$false,
           HelpMessage="Profile build execution time and generates a report in the <build_dir>/reports/profile directory.")]
       [switch]
-      $profile = $false,
+      $Profile = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Specify the project-specific cache directory. Defaults to .gradle in the root project directory.")]
       [string]
-      $projectCacheDir  = ".gradle",
-
-      [Parameter(
-              Mandatory=$false,
-              HelpMessage="Log errors only.")]
-      [switch]
-      $quiet  = $false,
+      $ProjectCacheDir  = ".gradle",
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Refresh the state of dependencies.")]
       [switch]
-      $refreshDependencies  = $false,
+      $RefreshDependencies  = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Refresh the public keys used for dependency verification.")]
       [switch]
-      $refreshKeys  = $false,
+      $RefreshKeys  = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Ignore previously cached task results.")]
       [switch]
-      $rerunTasks  = $false,
+      $RerunTasks  = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Print out the full (very verbose) stacktrace for all exceptions.")]
       [switch]
-      $fullStacktrace  = $false,
+      $FullStacktrace  = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Print out the stacktrace for all exceptions.")]
       [switch]
-      $stacktrace  = $false,
+      $Stacktrace  = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Creates a build scan. Gradle will emit a warning if the build scan plugin has not been applied. (https://gradle.com/build-scans)")]
       [switch]
-      $scan  = $false,
+      $Scan  = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Shows status of running and recently stopped Gradle Daemon(s).")]
       [switch]
-      $status  = $false,
+      $Status  = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Stops the Gradle Daemon if it is running.")]
       [switch]
-      $stop  = $false,
+      $Stop  = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Enables continuous build. Gradle does not exit and will re-execute tasks when task file inputs change.")]
       [switch]
-      $continuous  = $false,
+      $Continuous  = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Print version info.")]
       [switch]
-      $version  = $false,
+      $Version  = $false,
 
       [Parameter(
               Mandatory=$false,
-              HelpMessage="Set log level to warn.")]
-      [switch]
-      $warn  = $false,
-
-      [Parameter(
-              Mandatory=$false,
-              HelpMessage="Specifies which mode of warnings to generate. Values are 'all', 'fail', 'summary'(default) or 'none'")]
+              HelpMessage="Specifies which mode of warnings to generate. default 'summary'")]
+      [ValidateNotNullOrEmpty()]
+      [ValidateSet('all','fail','summary','none')]
       [string]
-      $warningMode  = "summary",
+      $WarningMode  = "summary",
 
       [Parameter(
               Mandatory=$false,
@@ -294,23 +303,23 @@ Values are 'normal' (default) or 'low'
 Enables watching the file system for changes, allowing data about the file system to be re-used for the next build.
 "@)]
       [switch]
-      $watchFilesystem  = $false,
+      $Watch  = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Persists dependency resolution for locked configurations, ignoring existing locking information if it exists")]
       [switch]
-      $writeLocks  = $false,
+      $WriteLocks  = $false,
 
       [Parameter(
               Mandatory=$false,
               HelpMessage="Specify a task to be excluded from execution.")]
       [string[]]
-      $excludeTask  = ""
+      $ExcludeTask  = ""
   )
 
-  Write-Debug "select $gradlewFileName starting in $workingDir"
-  $path = if (-Not (Test-Path -Path $workingDir)) { Get-Location } else { $workingDir }
+  Write-Debug "select $gradlewFileName starting in $WorkingDir"
+  $path = if (-Not (Test-Path -Path $WorkingDir)) { Get-Location } else { $WorkingDir }
   $fileName = $script:gradlewFileName
   # https://stackoverflow.com/questions/45642517/search-directory-for-a-file-iterating-up-parent-directories-if-not-found
   while($path -and (-Not (Test-Path (Join-Path $path $fileName)))) {
@@ -338,7 +347,7 @@ Enables watching the file system for changes, allowing data about the file syste
   $procOptions = @{
     FilePath = $gradlewPath
     WorkingDirectory = $gradlewDir
-    ArgumentList = $task
+    ArgumentList = $Task
     Wait = $True
     PassThru = $True
     NoNewWindow = $True
