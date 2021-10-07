@@ -12,6 +12,13 @@ The PowerShell version of GNG is implemented as a PowerShell Module.
 
 ### Installing
 
+The Gng Powershell module is available from the Powershell Gallery.
+If you have PowerShellGet installed then simply:
+[source,powershell]
+----
+Install-Module -Name GradleWrapperModule -Scope CurrentUser
+----
+
 #### From Source : Windows (Powershell)
 
 [source,powershell]
@@ -21,7 +28,7 @@ cd gng
 ./bin/install-gng-powershell.ps1
 ----
 
-After the Gradle Module has been installed into it can be used to initialize a gradle project.
+After the Gradle Module has been installed, it can be used to initialize a gradle project.
 
 Create a new Gradle project with a GNG wrapper.
 [source,powershell]
@@ -121,7 +128,16 @@ cd gng
 
 [source,powershell]
 ----
-Import-Module -Name ~/IdeaProjects/gng/bin/gng.psm1 -Force -Verbose
+./bin/install-powershell.ps1
+----
+
+https://docs.microsoft.com/en-us/powershell/module/powershellget/publish-module
+
+Presuming the $nugetkey has been set.
+
+[source,powershell]
+----
+Publish-Module -Name GradleWrapperModule -NuGetApiKey $nugetkey
 ----
 
 The `gw` command can now be run from a properly configured project.

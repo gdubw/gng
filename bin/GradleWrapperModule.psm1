@@ -5,15 +5,20 @@
  #>
 
 $script:psprovidername = "Microsoft-Windows-PowerShell"
-$script:gradlewFileName = "gradlew.bat"
+$script:baseGradlewFileName = "gradlew"
 
 <#
-This is the primary GNG function.
-It performs an upward search for the gradlew.bat file and runs that.
+.SYNOPSIS
+
 It is mostly just a wrapper for gradlew but it adds a few parameters.
+
+.DESCRIPTION
+
+This is the primary GNG function.
+It performs an upward search for the $script:baseGradlewFileName and runs that.
 It does not include the incubating or deprecated paramters.
-It allows for either the current directory or the gradlew.bat directory.
- #>
+It allows for either the current directory or the $script:baseGradlewFileName directory.
+#>
 function Invoke-Gradle {
   param(
       [Parameter(
@@ -24,7 +29,7 @@ By default runs the ':tasks' task.
 "@)]
       [string[]]
       $Tasks = ':tasks',
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage=@"
@@ -32,19 +37,28 @@ The working directory, defaults to current directory.
 "@)]
       [string]
       $WorkingDir = (Get-Location),
-
+  #
+      [Alias('w')]
+      [Parameter(
+              Mandatory=$false,
+              HelpMessage=@"
+Use the working directory, defaults to false, i.e. use the gradlew-directory.
+"@)]
+      [switch]
+      $UseWorkingDirectory = $false,
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Do not rebuild project dependencies.")]
       [switch]
       $NoRebuild = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Enables the Gradle build cache. Gradle will try to reuse outputs from previous builds.")]
       [switch]
       $BuildCache = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage=@"
@@ -54,49 +68,49 @@ Specifies which type of console output to generate. default: 'auto'.
       [ValidateSet('plain','auto','rich','verbose')]
       [string]
       $Console = "auto",
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Continue task execution after a task failure.")]
       [switch]
       $Continue = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Set system property of the JVM (e.g. -Dmyprop=myvalue).")]
       [string]
       $SystemProp,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Log in debug mode (includes normal stacktrace).")]
       [switch]
       $GradleDebug = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Set log level to warn.")]
       [switch]
       $GradleWarn  = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Set log level to info.")]
       [switch]
       $GradleInfo = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Log errors only.")]
       [switch]
       $GradleQuiet  = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Uses the Gradle Daemon to run the build. Starts the Daemon if not running.")]
       [switch]
       $Daemon = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Configures the dependency verification mode, default: 'off'")]
@@ -104,55 +118,55 @@ Specifies which type of console output to generate. default: 'auto'.
       [ValidateSet('strict','lenient','off')]
       [string]
       $DependencyVerification = 'off',
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Starts the Gradle Daemon in the foreground.")]
       [switch]
       $Foreground = $false,
-
+      #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Specifies the gradle user home directory.")]
       [string]
       $GradleUserHome,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Specify an initialization script.")]
       [string]
       $InitScript,
-
+  #
       [Parameter(
           Mandatory=$false,
           HelpMessage="Include the specified build in the composite.")]
       [string]
       $IncludeBuild,
-
+  #
       [Parameter(
           Mandatory=$false,
           HelpMessage="Generates checksums for dependencies used in the project (comma-separated list).")]
       [switch]
       $WriteVerificationMetadata  = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Run the builds with all task actions disabled.")]
       [switch]
       $DryRun  = $false,
-
+  #
       [Parameter(
           Mandatory=$false,
           HelpMessage="Configure the number of concurrent workers Gradle is allowed to use.")]
       [Int32]
       $MaxWorkers  = 3,
-    
+  #
       [Parameter(
           Mandatory=$false,
           HelpMessage="Disables the Gradle build cache.")]
       [switch]
       $NoBuildCache  = $false,
-    
+  #
       [Parameter(
           Mandatory=$false,
           HelpMessage=@"
@@ -161,13 +175,13 @@ Useful occasionally if you have configured Gradle to always run with the daemon 
 "@)]
       [switch]
       $NoDaemon  = $false,
-    
+  #
       [Parameter(
           Mandatory=$false,
           HelpMessage="Disables parallel execution to build projects.")]
       [switch]
       $NoParallel  = $false,
-    
+  #
       [Parameter(
           Mandatory=$false,
           HelpMessage=@"
@@ -176,37 +190,37 @@ For more information about build scans, please visit https://gradle.com/build-sc
 "@)]
       [switch]
       $NoScan  = $false,
-    
+  #
       [Parameter(
           Mandatory=$false,
           HelpMessage="Disables watching the file system.")]
       [switch]
       $NoWatchFs  = $false,
-    
+  #
       [Parameter(
           Mandatory=$false,
           HelpMessage="Execute the build without accessing network resources.")]
       [switch]
       $Offline  = $false,
-    
+  #
       [Parameter(
           Mandatory=$false,
           HelpMessage="Set project property for the build script (e.g. -Pmyprop=myvalue).")]
       [string]
       $ProjectProp  = "",
-    
+  #
       [Parameter(
           Mandatory=$false,
           HelpMessage="Specifies the start directory for Gradle. Defaults to current directory.")]
       [string]
       $ProjectDir  = (Get-Location),
-    
+  #
       [Parameter(
           Mandatory=$false,
           HelpMessage="Build projects in parallel. Gradle will attempt to determine the optimal number of executor threads to use.")]
       [switch]
       $Parallel  = $false,
-    
+  #
       [Parameter(
           Mandatory=$false,
           HelpMessage=@"
@@ -216,79 +230,79 @@ Specifies the scheduling priority for the Gradle daemon and all processes launch
       [ValidateSet('normal','low')]
       [string]
       $Priority  = "normal",
-    
+  #
       [Parameter(
           Mandatory=$false,
           HelpMessage="Profile build execution time and generates a report in the <build_dir>/reports/profile directory.")]
       [switch]
       $Profile = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Specify the project-specific cache directory. Defaults to .gradle in the root project directory.")]
       [string]
       $ProjectCacheDir  = ".gradle",
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Refresh the state of dependencies.")]
       [switch]
       $RefreshDependencies  = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Refresh the public keys used for dependency verification.")]
       [switch]
       $RefreshKeys  = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Ignore previously cached task results.")]
       [switch]
       $RerunTasks  = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Print out the full (very verbose) stacktrace for all exceptions.")]
       [switch]
       $FullStacktrace  = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Print out the stacktrace for all exceptions.")]
       [switch]
       $Stacktrace  = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Creates a build scan. Gradle will emit a warning if the build scan plugin has not been applied. (https://gradle.com/build-scans)")]
       [switch]
       $Scan  = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Shows status of running and recently stopped Gradle Daemon(s).")]
       [switch]
       $Status  = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Stops the Gradle Daemon if it is running.")]
       [switch]
       $Stop  = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Enables continuous build. Gradle does not exit and will re-execute tasks when task file inputs change.")]
       [switch]
       $Continuous  = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Print version info.")]
       [switch]
       $Version  = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Specifies which mode of warnings to generate. default 'summary'")]
@@ -296,7 +310,7 @@ Specifies the scheduling priority for the Gradle daemon and all processes launch
       [ValidateSet('all','fail','summary','none')]
       [string]
       $WarningMode  = "summary",
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage=@"
@@ -304,33 +318,33 @@ Enables watching the file system for changes, allowing data about the file syste
 "@)]
       [switch]
       $Watch  = $false,
-
+  #
       [Parameter(
               Mandatory=$false,
               HelpMessage="Persists dependency resolution for locked configurations, ignoring existing locking information if it exists")]
       [switch]
       $WriteLocks  = $false,
-
+  #
       [Alias('x')]
       [Parameter(
               Mandatory=$false,
-              HelpMessage="Specify a task to be excluded from execution.")]
+              HelpMessage="Specify tasks to be excluded from execution.")]
       [string[]]
       $ExcludeTask
   )
 
-  Write-Debug "select $gradlewFileName starting in $WorkingDir"
+  Write-Debug "select $baseGradlewFileName starting in $WorkingDir"
   $path = if (-Not (Test-Path -Path $WorkingDir)) { Get-Location } else { $WorkingDir }
-  $fileName = $script:gradlewFileName
+  $gradlewFileName = $script:baseGradlewFileName
   # https://stackoverflow.com/questions/45642517/search-directory-for-a-file-iterating-up-parent-directories-if-not-found
-  while($path -and (-Not (Test-Path (Join-Path $path $fileName)))) {
-    Write-Debug "candidate path $path $fileName"
+  while($path -and (-Not (Test-Path (Join-Path $path $gradlewFileName)))) {
+    Write-Debug "candidate path $path $gradlewFileName"
     if ($path -eq ((Split-Path $path -Qualifier)+"/")) {
       break
     }
     $path = Split-Path $path -Parent
   }
-  $gradlewPath = (Join-Path $path $fileName)
+  $gradlewPath = (Join-Path $path $gradlewFileName)
   if (-Not (Test-Path -Path $gradlewPath))
   {
     Write-Error "No ${gradlew} set up for this project; Please use 'Install-Gradle'."
@@ -344,78 +358,128 @@ Enables watching the file system for changes, allowing data about the file syste
   } else {
       ConvertFrom-Json ''
   }
-  $argList = @()
+  $gradleArgList = @()
 
-  if ($NoRebuild) { $argList += '--no-rebuild' }
-  if ($BuildCache) { $argList += '--build-cache' }
-  if ($Continue) { $argList += '--continue' }
-  if ($GradleDebug) { $argList += '--debug' }
-  if ($GradleWarn) { $argList += '--warn' }
-  if ($GradleInfo) { $argList += '--info' }
-  if ($GradleQuiet) { $argList += '--quiet' }
-  if ($Daemon) { $argList += '--daemon' }
-  if ($Foreground) { $argList += '--foreground' }
-  if ($WriteVerificationMetadata) { $argList += '--write-verification-metadata' }
-  if ($DryRun) { $argList += '--dry-run' }
-  if ($NoBuildCache) { $argList += '--no-build-cache' }
-  if ($NoDaemon) { $argList += '--no-daemon' }
-  if ($NoParallel) { $argList += '--no-parallel' }
-  if ($NoScan) { $argList += '--no-scan' }
-  if ($NoWatchFs) { $argList += '--no-watch-fs' }
-  if ($Offline) { $argList += '--offline' }
-  if ($Parallel) { $argList += '--parallel' }
-  if ($Profile) { $argList += '--profile' }
-  if ($RefreshDependencies) { $argList += '--refresh-dependencies' }
-  if ($RefreshKeys) { $argList += '--refresh-keys' }
-  if ($RerunTasks) { $argList += '--rerun-tasks' }
-  if ($FullStacktrace) { $argList += '--full-stacktrace' }
-  if ($Stacktrace) { $argList += '--stacktrace' }
-  if ($Scan) { $argList += '--scan' }
-  if ($Status) { $argList += '--status' }
-  if ($Stop) { $argList += '--stop' }
-  if ($Continuous) { $argList += '--continuous' }
-  if ($Version) { $argList += '--version' }
-  if ($Watch) { $argList += '--watch-fs' }
-  if ($WriteLocks) { $argList += '--write-locks' }
+  if ($NoRebuild) { $gradleArgList += '--no-rebuild' }
+  if ($BuildCache) { $gradleArgList += '--build-cache' }
+  if ($Continue) { $gradleArgList += '--continue' }
+  if ($GradleDebug) { $gradleArgList += '--debug' }
+  if ($GradleWarn) { $gradleArgList += '--warn' }
+  if ($GradleInfo) { $gradleArgList += '--info' }
+  if ($GradleQuiet) { $gradleArgList += '--quiet' }
+  if ($Daemon) { $gradleArgList += '--daemon' }
+  if ($Foreground) { $gradleArgList += '--foreground' }
+  if ($WriteVerificationMetadata) { $gradleArgList += '--write-verification-metadata' }
+  if ($DryRun) { $gradleArgList += '--dry-run' }
+  if ($NoBuildCache) { $gradleArgList += '--no-build-cache' }
+  if ($NoDaemon) { $gradleArgList += '--no-daemon' }
+  if ($NoParallel) { $gradleArgList += '--no-parallel' }
+  if ($NoScan) { $gradleArgList += '--no-scan' }
+  if ($NoWatchFs) { $gradleArgList += '--no-watch-fs' }
+  if ($Offline) { $gradleArgList += '--offline' }
+  if ($Parallel) { $gradleArgList += '--parallel' }
+  if ($Profile) { $gradleArgList += '--profile' }
+  if ($RefreshDependencies) { $gradleArgList += '--refresh-dependencies' }
+  if ($RefreshKeys) { $gradleArgList += '--refresh-keys' }
+  if ($RerunTasks) { $gradleArgList += '--rerun-tasks' }
+  if ($FullStacktrace) { $gradleArgList += '--full-stacktrace' }
+  if ($Stacktrace) { $gradleArgList += '--stacktrace' }
+  if ($Scan) { $gradleArgList += '--scan' }
+  if ($Status) { $gradleArgList += '--status' }
+  if ($Stop) { $gradleArgList += '--stop' }
+  if ($Continuous) { $gradleArgList += '--continuous' }
+  if ($Version) { $gradleArgList += '--version' }
+  if ($Watch) { $gradleArgList += '--watch-fs' }
+  if ($WriteLocks) { $gradleArgList += '--write-locks' }
 
-  if ($SystemProp.Length -gt 0) { $argList += @('--system-prop', $SystemProp) }
-  if ($ProjectProp.Length -gt 0) { $argList += @('--project-prop', $ProjectProp) }
-  if ($GradleUserHome.Length -gt 0) { $argList += @('--gradle-user-home', $GradleUserHome) }
-  if ($ProjectDir.Length -gt 0) { $argList += @('--project-dir', $ProjectDir) }
-  if ($ProjectCacheDir.Length -gt 0) { $argList += @('--project-cache-dir', $ProjectCacheDir) }
+  if ($SystemProp.Length -gt 0) { $gradleArgList += @('--system-prop', $SystemProp) }
+  if ($ProjectProp.Length -gt 0) { $gradleArgList += @('--project-prop', $ProjectProp) }
+  if ($GradleUserHome.Length -gt 0) { $gradleArgList += @('--gradle-user-home', $GradleUserHome) }
+  if ($InitScript.Length -gt 0) { $gradleArgList += @('--init-script', $InitScript) }
+  if ($IncludeBuild.Length -gt 0) { $gradleArgList += @('--include-build', $IncludeBuild) }
+  if ($ProjectDir.Length -gt 0) { $gradleArgList += @('--project-dir', $ProjectDir) }
+  if ($ProjectCacheDir.Length -gt 0) { $gradleArgList += @('--project-cache-dir', $ProjectCacheDir) }
 
-  if ($Console -ne 'auto') { $argList += @('--console', $Console) }
-  if ($DependencyVerification -ne 'off') { $argList += @('--dependency-verification', $DependencyVerification) }
-  if ($Priority -ne 'normal') { $argList += @('--priority', $Priority) }
-  if ($WarningMode -ne 'summary') { $argList += @('--warning-mode', $WarningMode) }
+  if ($Console -ne 'auto') { $gradleArgList += @('--console', $Console) }
+  if ($DependencyVerification -ne 'off') { $gradleArgList += @('--dependency-verification', $DependencyVerification) }
+  if ($Priority -ne 'normal') { $gradleArgList += @('--priority', $Priority) }
+  if ($WarningMode -ne 'summary') { $gradleArgList += @('--warning-mode', $WarningMode) }
 
-  $argList += @('--max-workers', $MaxWorkers)
+  $gradleArgList += @('--max-workers', $MaxWorkers)
 
   Foreach ($xtask in $ExcludeTask) {
-      $argList += @('--exclude-task') + $xtask
+      $gradleArgList += @('--exclude-task') + $xtask
   }
-  
-  $argList += $Tasks
-  Write-Debug "gradlew argument list '${argList}'"
+  $gradleArgList += $Tasks
+  Write-Debug "gradlew argument list '${gradleArgList}'"
   Write-Debug "gradlew configuration '${jsonConf}'"
+
+  # We bypass the gradlew.bat and run the java program directly.
+  # The gradlew.bat script only does a few things.
+  $appBaseName = $gradlewFileName
+  $appHome = $gradlewDir
+
+  # Add default JVM options here.
+  # You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
+  $defaultJvmOpts = @("-Xmx64m","-Xms64m")
+
+  if (Test-Path env:JAVA_HOME)  {
+      $javaHome = env:JAVA_HOME.Replace('"','')
+      $javaExe = Join-Path -Path env:JAVA_HOME -ChildPath "bin/java.exe"
+
+      if (-Not (Test-Path $javaExe)) {
+          Write-Error @"
+JAVA_HOME is set to an invalid directory: $javaHome
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation.
+"@
+      }
+  } else {
+      $javaExe = Get-Command "java.exe"
+      if (-Not (Test-Path $javaExe)) {
+          Write-Error @"
+JAVA_HOME is not set and no 'java' command could be found in your PATH.
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation.
+"@
+      }
+      $javaHome = Split-Path -Path (Split-Path -Path $javaExe -Parent) -Parent
+  }
+  $classPath = Join-Path -Path $appHome -ChildPath 'gradle/wrapper/gradle-wrapper.jar'
+  $javaArgList = @(
+      $defaultJvmOpts, $env:JAVA_OPTS, $env:GRADLE_OPTS,
+      "-Dorg.gradle.appname=$appBaseName",
+      '-classpath', $classPath,
+      'org.gradle.wrapper.GradleWrapperMain'
+  )
+  $workingDirectory = if ($UseWorkingDirectory) { $WorkingDir } else { $gradlewDir }
+
   $procOptions = @{
-    FilePath = $gradlewPath
-    WorkingDirectory = $gradlewDir
-    ArgumentList = $argList
-    Wait = $True
-    PassThru = $True
-    NoNewWindow = $True
+      FilePath = $javaExe
+      WorkingDirectory = $workingDirectory
+      ArgumentList = $javaArgList + $gradleArgList
+      Wait = $True
+      PassThru = $True
+      NoNewWindow = $True
   }
   [string[]] $procOptionString = $procOptions.GetEnumerator().ForEach({ "$($_.Name)=$($_.Value)" })
   Write-Debug "start-process '$procOptionString'"
-  Start-Process @procOptions
+
+  $rc = Start-Process @procOptions
+  if ($rc.ExitCode -eq 0) {
+      Write-Debug "gradlew task complete"
+  } else {
+      Write-Error "gradle task complete with error ${rc.ExitCode}"
+  }
 }
 
 <#
+.SYNOPSIS
+
 The wrapper does not make use of the gradle wrapper task.
 Instead it replicates the behavior of that script.
 This is because GNG has some configuration properties to install in the project as well.
- #>
+#>
 function Install-GradleWrapper {
     Param(
         [Parameter(
@@ -489,9 +553,15 @@ zipStorePath=wrapper/dists
 }
 
 
-# manage certificates
-# use https://docs.oracle.com/javase/8/docs/technotes/tools/unix/keytool.html
+<#
+.SYNOPSIS
 
+Manage certificates
+
+.LINK
+
+https://docs.oracle.com/javase/8/docs/technotes/tools/unix/keytool.html
+#>
 function Get-GradleCert {
   Param(
     [Parameter(
