@@ -12,7 +12,7 @@
 # RootModule = ''
 
 # Version number of this module.
-ModuleVersion = '0.0.1'
+ModuleVersion = '0.0.3'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -51,7 +51,7 @@ Description = 'This is provides a streamlined version of the gradle wrapper.'
 # ProcessorArchitecture = ''
 
 # Modules that must be imported into the global environment prior to importing this module
-# RequiredModules = @()
+RequiredModules = @("powershell-yaml")
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -87,7 +87,7 @@ AliasesToExport = @("gw","gng")
 # ModuleList = @()
 
 # List of all files packaged with this module
-# FileList = @()
+FileList = @("gng.yaml", "gradlew", "wrapper/gradle-wrapper.jar", "GradleWrapperModule.psm1")
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess. This may also contain a PSData hashtable with additional module metadata used by PowerShell.
 PrivateData = @{
@@ -123,7 +123,7 @@ PrivateData = @{
 } # End of PrivateData hashtable
 
 # HelpInfo URI of this module
-# HelpInfoURI = ''
+HelpInfoURI = 'https://github.com/babeloff/gng'
 
 # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
 # DefaultCommandPrefix = ''

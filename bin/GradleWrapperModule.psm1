@@ -10,7 +10,7 @@ $script:baseGradlewFileName = "gradlew"
 <#
 .SYNOPSIS
 
-It is mostly just a wrapper for gradlew but it adds a few parameters.
+It is mostly just a wrapper for gradlew with some additional parameters.
 
 .DESCRIPTION
 
@@ -18,6 +18,8 @@ This is the primary GNG function.
 It performs an upward search for the $script:baseGradlewFileName and runs that.
 It does not include the incubating or deprecated paramters.
 It allows for either the current directory or the $script:baseGradlewFileName directory.
+
+Defaults for some values are read from the gng.yaml configuration file.
 #>
 function Invoke-Gradle {
   param(
@@ -352,12 +354,22 @@ Enables watching the file system for changes, allowing data about the file syste
   }
   Write-Debug "Using gradle at '${gradlewPath}' to run"
   $gradlewDir = (Split-Path -Path $gradlewPath -Parent)
-  $jsonConfFile = Join-Path $gradlewDir 'gradle/gng.json'
-  $jsonConf = if (Test-Path -Path $jsonConfFile) {
-      Get-Content (Join-Path (Join-Path $gradlewDir 'gradle') 'gng.json') | Out-String | ConvertFrom-Json
+  $yamlConfFile = Join-Path $gradlewDir 'gradle/gng.yaml'
+  $defaultYamlConfFile = Join-Path $PSScriptRoot "gng.yaml"
+
+  $yamlConf = if (Test-Path -Path $yamlConfFile) {
+      Get-Content $yamlConfFile | Out-String | ConvertFrom-Yaml
+  } elseif (Test-Path -Path $defaultYamlConfFile) {
+      Get-Content $defaultYamlConfFile | Out-String | ConvertFrom-Yaml
   } else {
-      ConvertFrom-Json ''
+      ConvertFrom-Yaml @'
+options:
+'@
   }
+  # Add default JVM options here.
+  $defaultJvmOpts = $yamlConf["options"]["jvm"]
+  $defaultGradleOpts = $yamlConf["options"]["gradle"]
+
   $gradleArgList = @()
 
   if ($NoRebuild) { $gradleArgList += '--no-rebuild' }
@@ -412,20 +424,16 @@ Enables watching the file system for changes, allowing data about the file syste
   }
   $gradleArgList += $Tasks
   Write-Debug "gradlew argument list '${gradleArgList}'"
-  Write-Debug "gradlew configuration '${jsonConf}'"
+  Write-Debug "gradlew configuration '${yamlConf}'"
 
   # We bypass the gradlew.bat and run the java program directly.
   # The gradlew.bat script only does a few things.
   $appBaseName = $gradlewFileName
   $appHome = $gradlewDir
 
-  # Add default JVM options here.
-  # You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
-  $defaultJvmOpts = @("-Xmx64m","-Xms64m")
-
-  if (Test-Path env:JAVA_HOME)  {
-      $javaHome = env:JAVA_HOME.Replace('"','')
-      $javaExe = Join-Path -Path env:JAVA_HOME -ChildPath "bin/java.exe"
+  if (Test-Path $env:JAVA_HOME)  {
+      $javaHome = $env:JAVA_HOME.Replace('"','')
+      $javaExe = Join-Path -Path $env:JAVA_HOME -ChildPath "bin/java.exe"
 
       if (-Not (Test-Path $javaExe)) {
           Write-Error @"
@@ -446,18 +454,34 @@ location of your Java installation.
       $javaHome = Split-Path -Path (Split-Path -Path $javaExe -Parent) -Parent
   }
   $classPath = Join-Path -Path $appHome -ChildPath 'gradle/wrapper/gradle-wrapper.jar'
-  $javaArgList = @(
-      $defaultJvmOpts, $env:JAVA_OPTS, $env:GRADLE_OPTS,
+  $javaArgList = @()
+  if ($Watch) { $gradleArgList += '--watch-fs' }
+
+  $javaArgList = @()
+
+  # You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
+  if (Test-Path -Path $env:JAVA_OPTS -ErrorAction SilentlyContinue) {
+      $javaArgList += $env:JAVA_OPTS
+  } elseif (-Not ($defaultJvmOpts -eq $null)) {
+      $javaArgList += $defaultJvmOpts
+  }
+  if (Test-Path -Path $env:GRADLE_OPTS -ErrorAction SilentlyContinue) {
+      $javaArgList += $env:GRADLE_OPTS
+  } elseif (-Not ($defaultGradleOpts -eq $null)) {
+      $javaArgList += $defaultGradleOpts
+  }
+  $javaArgList += @(
       "-Dorg.gradle.appname=$appBaseName",
       '-classpath', $classPath,
       'org.gradle.wrapper.GradleWrapperMain'
   )
   $workingDirectory = if ($UseWorkingDirectory) { $WorkingDir } else { $gradlewDir }
-
+  $argList = $javaArgList + $gradleArgList
+  Write-Debug "start-process argList '$argList'"
   $procOptions = @{
       FilePath = $javaExe
       WorkingDirectory = $workingDirectory
-      ArgumentList = $javaArgList + $gradleArgList
+      ArgumentList = $argList
       Wait = $True
       PassThru = $True
       NoNewWindow = $True
