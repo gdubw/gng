@@ -6,7 +6,6 @@ DEBUG="${DEBUG:-0}"
 if [[ "${DEBUG}" == 1 ]]; then
   set -x
 fi
-export SHELLOPTS
 
 readonly INFO_COLOR='\033[1;96m'
 readonly NO_COLOR='\033[0m' # No Color
