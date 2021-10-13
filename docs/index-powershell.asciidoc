@@ -1,0 +1,149 @@
+image:https://github.com/dantesun/gng/workflows/Validate%20Gradle%20Wrapper/badge.svg[]
+image:https://badges.gitter.im/gdubw/community.svg[Gitter]
+//link:https://gitter.im/gdubw/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge[]
+
+GNG is the successor of [gdub](https://www.gdub.rocks). It keeps the original `gw` command and with more features.
+
+It is written in both a bash script and a powershell module.
+
+## Quick Start
+
+The PowerShell version of GNG is implemented as a PowerShell Module.
+
+### Installing
+
+The Gng Powershell module is available from the Powershell Gallery.
+If you have PowerShellGet installed then simply:
+[source,powershell]
+----
+Install-Module -Name GradleWrapperModule -Scope CurrentUser
+----
+
+#### From Source : Windows (Powershell)
+
+[source,powershell]
+----
+git clone https://github.com/babeloff/gng.git
+cd gng
+./bin/install-gng-powershell.ps1
+----
+
+After the Gradle Module has been installed, it can be used to initialize a gradle project.
+
+Create a new Gradle project with a GNG wrapper.
+[source,powershell]
+----
+Install-GradleWrapper -DestinationDir example-project
+cd example-project
+----
+
+For that configured project, use `gw` whenever you need to type `gradlew` or `gradle`.
+[source,powershell]
+----
+gw :tasks
+gw -Task :tasks
+----
+
+## Usage
+
+Type `gw` whenever you need to type `gradle` or `gradlew`.
+It will search upwards from your current directory until it finds `gradlew.bat`.
+It will run the gradlew command found from that directory.
+
+Note:: don't worry
+[source,powershell]
+----
+gng -Action wrapper
+----
+This will create a Gradle wrapper in your current working directory.
+
+### 'gng' and 'gw'
+
+There are two commands `gw` and `gng`. `gw` is for your daily use and `gng` provides extra functions.
+
+* `gw` is originally from [gdub](http://gdub.rocks) and shorter than `gng`. It's easy to type and good for daily use.
+* `gng` is the new name, and provides more features than `gw`. For example, `gng wrapper` can generate a copy of Gradle
+  Wrapper for you, type `gng wrapper -h` for details.
+
+[source,powershell]
+----
+gw -Action wrapper -Help
+----
+
+Please note that `gw wrapper` OVERRIDES the original command `gradle wrapper` that executes Gradle Wrapper task. If you
+want to execute the Gradle wrapper task instead, please type `gw wrapper`.
+
+Example: The following command will create a directory 'test' and install a copy of Gradle Wrapper with the latest
+version Gradle.
+
+[source,powershell]
+----
+gw -Action wrapper -d test
+----
+
+It will output like this(version number may vary as time goes by):
+
+[source,powershell]
+----
+Fetching the latest Gradle version from services.gradle.org
+
+The latest Gradle version is 6.8.1
+
+Installing Gradle Wrapper in test. (version=6.8.1, distributionType=all, mirrorUrl=<Not Specified>)
+----
+
+### More examples
+
+1. `gw wrapper` will silently upgrade your existing Gradle Wrapper to the latest version
+2. `gw wrapper -v 4.8.1` will silently set your existing Gradle Wrapper to the version 4.8.1
+3. `gw wrapper -t all` will silently set your existing Gradle Wrapper to the latest version with Gradle source code
+   archive(gradle-xxx-all.zip).
+4. `gw wrapper -v 4.2.1 -m 'http://example.com/gradle/` will set your Gradle's version to 4.2.1 and distributionUrl
+   to `http://example.com/gradle/gradle-4.2.1-bin.zip`
+5. `gw wrapper -v 4.2.1 -t all -m 'http://example.com/gradle/` will set your Gradle's version to 4.2.1 and
+   distributionUrl to `http://example.com/gradle/gradle-4.2.1-all.zip`
+
+
+## How does GNG install Gradle Wrapper?
+
+It copies the embedded Gradle Wrapper to your project directly.
+You can trust the embedded gradle-wrapper.jar.
+It is verified
+by [Gradle Wrapper Validation](https://github.com/marketplace/actions/gradle-wrapper-validation)
+![](https://github.com/dantesun/gng/workflows/Validate%20Gradle%20Wrapper/badge.svg)
+.
+
+
+### Development
+
+#### From Source : Windows (Powershell)
+
+- https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_modules?view=powershell-5.1
+
+[source,powershell]
+----
+git clone https://github.com/babeloff/gng.git
+cd gng
+----
+
+[source,powershell]
+----
+./bin/install-powershell.ps1
+----
+
+https://docs.microsoft.com/en-us/powershell/module/powershellget/publish-module
+
+Presuming the $nugetkey has been set.
+
+[source,powershell]
+----
+Publish-Module -Name GradleWrapperModule -NuGetApiKey $nugetkey
+----
+
+The `gw` command can now be run from a properly configured project.
+[source,powershell]
+----
+gw :tasks -Debug
+----
+
+

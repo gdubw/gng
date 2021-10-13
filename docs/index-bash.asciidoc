@@ -1,41 +1,47 @@
-![](https://github.com/dantesun/gng/workflows/Validate%20Gradle%20Wrapper/badge.svg) [![Gitter](https://badges.gitter.im/gdubw/community.svg)](https://gitter.im/gdubw/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+image:https://github.com/dantesun/gng/workflows/Validate%20Gradle%20Wrapper/badge.svg[]
+image:https://badges.gitter.im/gdubw/community.svg[Gitter]
+//link:https://gitter.im/gdubw/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge[]
 
-GNG is the successor of [gdub](https://www.gdub.rocks). It keeps the original `gw` command and with more features.
+GNG is the successor of link:https://www.gdub.rocks[gdub]. 
+It keeps the original `gw` command and with more features.
 
 It is written totally in bash script.
 
-# Quick Start
+## Quick Start
 
-## Homebrew
+### Homebrew
 
-```shell
-#Install gng
+[source,shell]
+----
+##Install gng
 brew tap gdubw/gng
 brew install gng
-```
+----
 
-## Self-Extracting Installer
+### Self-Extracting Installer
 
 The self-extracting installer is created with [makeself](https://github.com/megastep/makeself). If you are interested in
 the packaging details , Please see [release.yml](https://github.com/gdubw/gng/blob/master/.github/workflows/release.yml).
 
-```shell
+[source,shell]
+----
  # Downloading the latest release
  curl -fsSL https://github.com/gdubw/gng/releases/latest/download/gng-installer.sh -o gng-installer.sh
  sudo bash ./gng-installer.sh
-```
+----
 
 After Installation is complete:
 
-```shell
-# Creates a new Gradle project with Gradle wrapper
+[source,shell]
+----
+## Creates a new Gradle project with Gradle wrapper
 gng wrapper -d example-project
 cd example-project
-# From now on, always type `gw` whenever you need to type `gradlew`
+## From now on, always type `gw` whenever you need to type `gradlew`
 gw
-```
+----
 
-# GNG is Not Gradle
+## GNG is Not Gradle
 
 GNG is a script that automatically search your `gradlew` when you are inside your Gradle project and execute it. It also
 contains an official Gradle wrapper. You can create gradle projects from scratch without installing Gradle.
@@ -43,7 +49,7 @@ contains an official Gradle wrapper. You can create gradle projects from scratch
 This is originally inspired by [gdub](https://www.gdub.rocks/)
 and [gradlew-bootstrap](https://github.com/viphe/gradlew-bootstrap).
 
-## What's the problem?
+### What's the problem?
 
 I worked with a lot of gradle projects, every project has its own Gradle Wrapper. So the global installed one, normally
 installed with `brew install gradle`, is seldom used. In fact, the global installed gradle’s version may conflict with
@@ -64,14 +70,14 @@ You might interest in these discussions.
 > - [Phil Swenson's Gradle Forum Post](http://gsfn.us/t/39h67)
 >
 
-# Usage
+## Usage
 
 Just type `gw` whenever you need to type `gradle` or `gradlew`, then your life will be easier.
 
 If you don't have any Gradle or Gradle Wrapper installed, please don't worry. just type `gng wrapper`. It will create a
 Gradle wrapper in your current working directory.
 
-## 'gng' and 'gw'
+### 'gng' and 'gw'
 
 There are two commands `gw` and `gng`. `gw` is for your daily use and `gng` provides extra functions.
 
@@ -79,7 +85,8 @@ There are two commands `gw` and `gng`. `gw` is for your daily use and `gng` prov
 * `gng` is the new name, and provides more features than `gw`. For example, `gng wrapper` can generate a copy of Gradle
   Wrapper for you, type `gng wrapper -h` for details.
 
-```bash
+[source,bash]
+----
 gng wrapper -h
 Generates a Gradle Wrapper
 Usage: gng wrapper [-v|--version <arg>] [-t|--distribution-type <arg>] [-m|--mirror <arg>] [-h|--help] [ -d|--destination-dir <arg>
@@ -90,7 +97,7 @@ Usage: gng wrapper [-v|--version <arg>] [-t|--distribution-type <arg>] [-m|--mir
 	              "https://services.gradle.org/distributions/gradle-6.8-all.zip" will become "https://example.com/gradle/gradle-6.8-all.zip"
 	-d, --destination-dir : Your Gradle project root directory. (default: 'Your current working directory retrieved using ${PWD}')
 	-h, --help: Prints help
-```
+----
 
 Please note that `gng wrapper` OVERRIDES the original command `gradle wrapper` that executes Gradle Wrapper task. If you
 want to execute the Gradle wrapper task instead, please type `gw wrapper`.
@@ -98,21 +105,23 @@ want to execute the Gradle wrapper task instead, please type `gw wrapper`.
 Example: The following command will create a directory 'test' and install a copy of Gradle Wrapper with the latest
 version Gradle.
 
-```bash
+[source,bash]
+----
 gng wrapper -d test
-```
+----
 
 It will output like this(version number may vary as time goes by):
 
-```bash
+[source,bash]
+----
 Fetching the latest Gradle version from services.gradle.org
 
 The latest Gradle version is 6.8.1
 
 Installing Gradle Wrapper in test. (version=6.8.1, distributionType=all, mirrorUrl=<Not Specified>)
-```
+----
 
-## More examples
+### More examples
 
 1. `gng wrapper` will silently upgrade your existing Gradle Wrapper to the latest version
 2. `gng wrapper -v 4.8.1` will silently set your existing Gradle Wrapper to the version 4.8.1
@@ -123,38 +132,42 @@ Installing Gradle Wrapper in test. (version=6.8.1, distributionType=all, mirrorU
 5. `gng wrapper -v 4.2.1 -t all -m 'http://example.com/gradle/` will set your Gradle's version to 4.2.1 and
    distributionUrl to `http://example.com/gradle/gradle-4.2.1-all.zip`
 
-# Installation
+## Installation
 
-## Homebrew
+### Homebrew
 
-```bash
+[source,bash]
+----
 brew tap gdubw/gng
 brew install gng
-```
+----
 
-## Installing from source
+### Installing from source
 
-```bash
+[source,bash]
+----
 git clone https://github.com/gdubw/gng.git
 cd gng
 sudo ./install.sh
-```
+----
 
-## Aliasing the `gradle` command
+### Aliasing the `gradle` command
 
 To avoid using any system wide Gradle distribution add a `gradle` alias to `gw` to your shell's configuration file.
 
 Example *bash*:
 
-```text
+[source,text]
+----
 echo "alias gradle=gw" >> ~/.bashrc
 echo "export PATH=/usr/local/bin:${PATH}" >> ~/.bashrc
 source ~/.bashrc
-```
+----
 
-## install.sh usage
+### install.sh usage
 
-```bash
+[source,bash]
+----
 sudo ./install.sh [-fhsu]
 
 Install gng from git source tree. See http://github.com/gdubw/gng for details.
@@ -163,7 +176,7 @@ Install gng from git source tree. See http://github.com/gdubw/gng for details.
 -f re-install
 -h usage
 -s check for update
-```
+----
 
 examples:
 
@@ -171,7 +184,7 @@ examples:
 2. `./install.sh -s` will check for latest updates from remote master
 3. `git reset --hard && git pull` will keep your copy to the latest
 
-# How does GNG install Gradle Wrapper?
+## How does GNG install Gradle Wrapper?
 
 It copies the embedded Gradle Wrapper to your project directly. You can trust the embedded gradle-wrapper.jar. It is
 verified

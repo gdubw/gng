@@ -1,0 +1,10 @@
+# Configuration file of gng
+
+# https://github.com/ddimtirov/gwo-agent
+
+tasks:
+  - name: ":tasks"
+options:
+  jvm: ["-Xmx64m","-Xms64m"]
+#  gradle: "-javaagent:~/.gradle/gwo-agent.jar=distributionUrl~=@https://services.gradle.org/distributions@https://mymirror/gradle/@
+
