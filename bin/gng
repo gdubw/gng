@@ -141,14 +141,14 @@ bootstrap_help() {
 }
 
 function parse_gradle_version() {
-    if command -v python &> /dev/null
-    then
-        python -c "import json,sys; obj=json.load(sys.stdin); print obj['version'];"
-        return
-    fi
     if command -v python3 &> /dev/null
     then
         python3 -c "import json,sys; obj=json.load(sys.stdin); print (obj['version']);"
+        return
+    fi
+    if command -v python &> /dev/null
+    then
+        python -c "import json,sys; obj=json.load(sys.stdin); print obj['version'];"
         return
     fi
     die "Cannot find python/python3 interpreter !"
