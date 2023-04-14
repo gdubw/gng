@@ -143,7 +143,12 @@ bootstrap_help() {
 function parse_gradle_version() {
     if command -v python &> /dev/null
     then
-        python -c "import json,sys; obj=json.load(sys.stdin); print obj['version'];"
+        python_major_version=$(python -c 'import sys; print(sys.version_info[0])')
+        if [ "$python_major_version" = "2" ]; then
+          python -c "import json,sys; obj=json.load(sys.stdin); print obj[unicode('version', 'utf-8')];"
+        else
+          python -c "import json,sys; obj=json.load(sys.stdin); print (obj['version']);"
+        fi
         return
     fi
     if command -v python3 &> /dev/null
