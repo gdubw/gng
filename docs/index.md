@@ -8,10 +8,19 @@ It is written totally in bash script.
 
 ## Homebrew
 
+If you use [Homebrew](https://brew.sh):
+
 ```shell
-#Install gng
 brew tap gdubw/gng
 brew install gng
+```
+
+## MacPorts
+
+If you use [MacPorts](https://www.macports.org):
+
+```shell
+sudo port install gng
 ```
 
 ## Self-Extracting Installer
