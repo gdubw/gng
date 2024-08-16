@@ -124,7 +124,7 @@ gradle() {
     eval "${SAVED_OPTS}"
     GRADLE_OPTS="$(cfg_get GRADLE_OPTS) ${GRADLE_OPTS:-}"
     export GRADLE_OPTS
-    exec "${gradle}" "$@"
+    exec "sh" "${gradle}" "$@"
   )
 }
 
@@ -141,6 +141,11 @@ bootstrap_help() {
 }
 
 function parse_gradle_version() {
+    if command -v python3 &> /dev/null
+    then
+        python3 -c "import json,sys; obj=json.load(sys.stdin); print (obj['version']);"
+        return
+    fi
     if command -v python &> /dev/null
     then
         python_major_version=$(python -c 'import sys; print(sys.version_info[0])')
@@ -149,11 +154,6 @@ function parse_gradle_version() {
         else
           python -c "import json,sys; obj=json.load(sys.stdin); print (obj['version']);"
         fi
-        return
-    fi
-    if command -v python3 &> /dev/null
-    then
-        python3 -c "import json,sys; obj=json.load(sys.stdin); print (obj['version']);"
         return
     fi
     die "Cannot find python/python3 interpreter !"
