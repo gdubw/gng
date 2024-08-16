@@ -11,13 +11,14 @@ jobs:
         uses: battila7/get-version-action@v2
       - name: Build package
         run: |
-          curl -fsSL https://github.com/megastep/makeself/releases/download/release-2.4.3/makeself-2.4.3.run -o makeself.run
+          curl -fsSL https://github.com/megastep/makeself/releases/download/release-2.5.0/makeself-2.5.0.run -o makeself.run
           bash makeself.run --target makeself
           mkdir tmp
           cp -r install.sh bin gradle lib ./tmp
           ./makeself/makeself.sh --notemp --needroot ./tmp gng-installer.sh "GNG ${{ steps.get_version.outputs.version }}" ./install.sh
       - name: Release
         uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: gng-installer.sh
           
