@@ -1,6 +1,6 @@
 ![](https://github.com/dantesun/gng/workflows/Validate%20Gradle%20Wrapper/badge.svg) [![Gitter](https://badges.gitter.im/gdubw/community.svg)](https://gitter.im/gdubw/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-GNG is the successor of [gdub](https://www.gdub.rocks). It keeps the original `gw` command and with more features.
+GNG is the successor of [gdub](https://github.com/gdubw/gdub). It keeps the original `gw` command and with more features.
 
 It is written totally in bash script.
 
@@ -49,7 +49,7 @@ gw
 GNG is a script that automatically search your `gradlew` when you are inside your Gradle project and execute it. It also
 contains an official Gradle wrapper. You can create gradle projects from scratch without installing Gradle.
 
-This is originally inspired by [gdub](https://www.gdub.rocks/)
+This is originally inspired by [gdub](https://github.com/gdubw/gdub)
 and [gradlew-bootstrap](https://github.com/viphe/gradlew-bootstrap).
 
 ## What's the problem?
@@ -66,7 +66,7 @@ installed gradle , it is not possible installing Gradle Wrapper into a brand-new
 
 You might interest in these discussions.
 >
-> Quoted from [gdub](https://gdub.rocks)
+> Quoted from [gdub](https://github.com/gdubw/gdub)
 >
 > - [Issue Gradle-2429](http://issues.gradle.org/browse/Gradle-2429)
 > - [Spencer Allain's Gradle Forum Post](http://gsfn.us/t/33g0l)
@@ -84,7 +84,7 @@ Gradle wrapper in your current working directory.
 
 There are two commands `gw` and `gng`. `gw` is for your daily use and `gng` provides extra functions.
 
-* `gw` is originally from [gdub](http://gdub.rocks) and shorter than `gng`. It's easy to type and good for daily use.
+* `gw` is originally from [gdub](https://github.com/gdubw/gdub) and shorter than `gng`. It's easy to type and good for daily use.
 * `gng` is the new name, and provides more features than `gw`. For example, `gng wrapper` can generate a copy of Gradle
   Wrapper for you, type `gng wrapper -h` for details.
 
@@ -92,13 +92,13 @@ There are two commands `gw` and `gng`. `gw` is for your daily use and `gng` prov
 gng wrapper -h
 Generates a Gradle Wrapper
 Usage: gng wrapper [-v|--version <arg>] [-t|--distribution-type <arg>] [-m|--mirror <arg>] [-h|--help] [ -d|--destination-dir <arg>
-	-v, --version: Gradle Version (default: 'latest', version information is from https://services.gradle.org/versions/current, visit https://services.gradle.org/versions/all for all available versions)
-	-t, --distribution-type: Gradle Distribution Type (default: 'all')
-	-m, --mirror: Gradle Distribution Mirror URL Prefix(Optional with no default value, The url prefix replaces https://services.gradle.org/distributions/)
-	              It replaces the whole distributionUrl except the file part in a URL. For example, if specify '-m "https://example.com/gradle/"', then
-	              "https://services.gradle.org/distributions/gradle-6.8-all.zip" will become "https://example.com/gradle/gradle-6.8-all.zip"
-	-d, --destination-dir : Your Gradle project root directory. (default: 'Your current working directory retrieved using ${PWD}')
-	-h, --help: Prints help
+    -v, --version: Gradle Version (default: 'latest', version information is from https://services.gradle.org/versions/current, visit https://services.gradle.org/versions/all for all available versions)
+    -t, --distribution-type: Gradle Distribution Type (default: 'all')
+    -m, --mirror: Gradle Distribution Mirror URL Prefix(Optional with no default value, The url prefix replaces https://services.gradle.org/distributions/)
+                  It replaces the whole distributionUrl except the file part in a URL. For example, if specify '-m "https://example.com/gradle/"', then
+                  "https://services.gradle.org/distributions/gradle-6.8-all.zip" will become "https://example.com/gradle/gradle-6.8-all.zip"
+    -d, --destination-dir : Your Gradle project root directory. (default: 'Your current working directory retrieved using ${PWD}')
+    -h, --help: Prints help
 ```
 
 Please note that `gng wrapper` OVERRIDES the original command `gradle wrapper` that executes Gradle Wrapper task. If you
